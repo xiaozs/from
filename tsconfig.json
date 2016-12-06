@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+        "module": "amd",
+        "target": "es3",
+        "noImplicitAny": true,
+        "sourceMap": false,
+        "strictNullChecks": true,
+        "lib": [
+            "es5",
+            "es2015.promise"
+        ]
+    }
+}
