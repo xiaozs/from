@@ -8,6 +8,10 @@
         "lib": [
             "es5",
             "es2015.promise"
-        ]
+        ],
+        "baseUrl": "./src",
+        "paths": {
+            "Type": "Type"
+        }
     }
 }
