@@ -15,7 +15,7 @@ export interface KeyValuePair<T> {
 /**
  * 将原生js对象当作map来使用
  */
-export interface mapObject<T> {
+export interface MapObject<T> {
     [key: string]: T;
 }
 
