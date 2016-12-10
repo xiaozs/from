@@ -2,7 +2,8 @@
   "name": "ext",
   "version": "0.0.1",
   "scripts": {
-    "test": "karma start karma.conf.js"
+    "test": "karma start karma.conf.js",
+    "build": "tsc -p ."
   },
   "devDependencies": {
     "@types/qunit": "^2.0.31",

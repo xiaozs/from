@@ -8,7 +8,6 @@ var pathToModule = function (path) {
 
 for (var file in window.__karma__.files) {
     if (TEST_REGEXP.test(file)) {
-        console.log(file);
         allTestFiles.push(pathToModule(file));
     }
 }
