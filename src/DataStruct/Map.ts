@@ -5,7 +5,14 @@ import * as Type from "Type";
  * 
  */
 export default class Map<T> {
+    /**
+     * 用于存储键值对的数组
+     */
     private keyValuePairArray_: KeyValuePair<T>[] = [];
+
+    /**
+     * @param mapObj 用于初始化的原生对象
+     */
     constructor(mapObj?: MapObject<T>) {
         if (Type.isNotVoid(mapObj)) {
             for (let key in mapObj) {
@@ -13,6 +20,10 @@ export default class Map<T> {
             }
         }
     }
+
+    /**
+     * 查找键值所在的索引
+     */
     private indexOf_(key: string): number {
         for (let i = 0; i < this.keyValuePairArray_.length; i++) {
             if (this.keyValuePairArray_[i].key === key) {
@@ -21,10 +32,25 @@ export default class Map<T> {
         }
         return -1;
     }
+
+    /**
+     * 通过键值判断是否存有该键值对
+     * @param key 键值
+     */
     has(key: string): boolean {
         return this.indexOf_(key) !== -1;
     }
+
+    /**
+     * 通过原生对象一次性设置多个键值对
+     * @param mapObj 原生对象
+     */
     set(mapObj: MapObject<T>): this;
+    /**
+     * 设置一对键值对
+     * @param key 键
+     * @param value 值
+     */
     set(key: string, value: T): this;
     set(keyOrObject: string | MapObject<T>, value?: T): this {
         if (Type.isString(keyOrObject)) {
@@ -36,6 +62,12 @@ export default class Map<T> {
         }
         return this;
     }
+
+    /**
+     * 设置单对键值对
+     * @param key 键
+     * @param value 值
+     */
     private setSingle_(key: string, value: T): void {
         let index = this.indexOf_(key);
         if (index !== -1) {
@@ -47,6 +79,11 @@ export default class Map<T> {
             });
         }
     }
+
+    /**
+     * 通过键获取值
+     * @key 键
+     */
     get(key: string): T | undefined {
         let index = this.indexOf_(key);
         if (index !== -1) {
@@ -54,9 +91,18 @@ export default class Map<T> {
         }
         return undefined;
     }
+
+    /**
+     * 返回当前对象中键值对的个数
+     */
     count(): number {
         return this.keyValuePairArray_.length;
     }
+
+    /**
+     * 通过键值移除键值对
+     * @param keys 键
+     */
     remove(...keys: string[]): this {
         for (let key of keys) {
             let index = this.indexOf_(key);
@@ -66,10 +112,18 @@ export default class Map<T> {
         }
         return this;
     }
+
+    /**
+     * 清除当前对象中的所有键值对
+     */
     clear(): this {
         this.keyValuePairArray_.length = 0;
         return this;
     }
+
+    /**
+     * 返回一个由所有键作为元素的原生数组
+     */
     keys(): string[] {
         let arr: string[] = [];
         for (let KeyValuePair of this.keyValuePairArray_) {
@@ -77,6 +131,10 @@ export default class Map<T> {
         }
         return arr;
     }
+
+    /**
+     * 返回一个由所有值作为元素的原生数组
+     */
     values(): T[] {
         let arr: T[] = [];
         for (let i = 0; i < this.keyValuePairArray_.length; i++) {
@@ -84,6 +142,10 @@ export default class Map<T> {
         }
         return arr;
     }
+
+    /**
+     * 返回一个由KeyValuePair对象组成的原生数组
+     */
     KeyValuePairs(): KeyValuePair<T>[] {
         return this.keyValuePairArray_.slice();
     }
