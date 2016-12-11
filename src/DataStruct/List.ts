@@ -1,10 +1,11 @@
 import * as Type from "Type";
 import * as Error from "Error";
+import { Iterable, Iterator, IterationResult } from "Interface";
 
 /**
  * 数组加强类
  */
-export default class List<T>{
+export default class List<T> implements Iterable<T>{
     /**
      * 用于存储着代理的数组
      */
@@ -28,14 +29,14 @@ export default class List<T>{
     }
 
     /**
+     * 获取数组长度
+     */
+    length(): number;
+    /**
      * 设置数组的长度
      * @param length 数组长度
      */
     length(length: number): this;
-    /**
-     * 获取数组长度
-     */
-    length(): number;
     length(length?: number): this | number {
         if (Type.isNumber(length)) {
             this.innerArray_.length = length;
@@ -374,5 +375,30 @@ export default class List<T>{
      */
     toArray(): T[] {
         return this.innerArray_.slice();
+    }
+
+    /**
+     * 生成枚举器
+     */
+    getIterator(): Iterator<T> {
+        return new ListIterator(this);
+    }
+}
+
+class ListIterator<T> implements Iterator<T>{
+    private index_ = 0;
+    constructor(private list: List<T>) { }
+    async next(): Promise<IterationResult<T>> {
+        let result: IterationResult<T>;
+        if (this.index_ < this.list.length()) {
+            result = {
+                value: this.list.get(this.index_),
+                done: false
+            }
+        } else {
+            result = { done: true };
+        }
+        this.index_++;
+        return result;
     }
 }
