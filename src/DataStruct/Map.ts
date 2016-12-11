@@ -1,4 +1,4 @@
-import { KeyValuePair, MapObject } from "./Interface";
+import { KeyValuePair, MapObject } from "Interface";
 import * as Type from "Type";
 
 /**
