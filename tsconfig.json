@@ -5,15 +5,16 @@
         "noImplicitAny": true,
         "sourceMap": false,
         "strictNullChecks": true,
+        "importHelpers": true,
         "outDir": "dist",
-        "baseUrl": "src",
+        "baseUrl": ".",
         "lib": [
             "dom",
             "es5",
             "es2015.promise"
         ],
         "paths": {
-            
+            "tslib": ["node_modules/tslib/tslib"]
         }
     }
 }
