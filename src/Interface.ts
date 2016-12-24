@@ -36,21 +36,36 @@ export interface Iterator<T> {
     /**
      * 获得枚举结果
      */
-    next(): Promise<IterationResult<T>>;
+    next(): IterationResult<T>;
 }
 
 /**
  * 枚举结果
  */
-export interface IterationResult<T> {
-    /**
-     * 当前枚举的值
-     */
-    value?: T;
+export type IterationResult<T> = DoneIterationResult<T> | NotDoneIterationResult<T>;
+
+/**
+ * 已完成枚举结果
+ */
+export interface DoneIterationResult<T> {
     /**
      * 枚举是否已经结束
      */
-    done: boolean;
+    done: true;
+}
+
+/**
+ * 未完成枚举结果
+ */
+export interface NotDoneIterationResult<T> {
+    /**
+     * 当前枚举的值
+     */
+    value: T;
+    /**
+     * 枚举是否已经结束
+     */
+    done: false;
 }
 
 /**

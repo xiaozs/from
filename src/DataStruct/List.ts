@@ -391,7 +391,7 @@ export default class List<T> implements Iterable<T>{
 class ListIterator<T> implements Iterator<T>{
     private index_ = 0;
     constructor(private list_: List<T>) { }
-    async next(): Promise<IterationResult<T>> {
+    next(): IterationResult<T> {
         let result: IterationResult<T>;
         if (this.index_ < this.list_.length()) {
             result = {

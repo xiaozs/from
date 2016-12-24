@@ -168,7 +168,7 @@ class MapIterator<T> implements Iterator<KeyValuePair<T>>{
     constructor(map: Map<T>) {
         this.keyValuePairs_ = map.keyValuePairs();
     }
-    async next(): Promise<IterationResult<KeyValuePair<T>>> {
+    next(): IterationResult<KeyValuePair<T>> {
         let result: IterationResult<KeyValuePair<T>>;
         if (this.index_ < this.keyValuePairs_.length) {
             result = {
