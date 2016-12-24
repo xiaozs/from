@@ -1,9 +1,9 @@
 /**
  * 数组索引超限异常
  */
-export class OutOfIndexError extends Error { }
+export class OutOfIndexError { }
 
 /**
  * 数组长度为空异常
  */
-export class EmptyArrayError extends Error { }
+export class EmptyArrayError { }
