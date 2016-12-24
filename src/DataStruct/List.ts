@@ -389,19 +389,22 @@ export default class List<T> implements Iterable<T>{
  * List类的枚举器
  */
 class ListIterator<T> implements Iterator<T>{
+    private list_: T[];
     private index_ = 0;
-    constructor(private list_: List<T>) { }
+    constructor(list: List<T>) {
+        this.list_ = list.toArray();
+    }
     next(): IterationResult<T> {
         let result: IterationResult<T>;
-        if (this.index_ < this.list_.length()) {
+        if (this.index_ < this.list_.length) {
             result = {
-                value: this.list_.get(this.index_),
+                value: this.list_[this.index_],
                 done: false
             }
+            this.index_++;
         } else {
             result = { done: true };
         }
-        this.index_++;
         return result;
     }
 }

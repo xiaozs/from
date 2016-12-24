@@ -175,10 +175,10 @@ class MapIterator<T> implements Iterator<KeyValuePair<T>>{
                 value: this.keyValuePairs_[this.index_],
                 done: false
             }
+            this.index_++;
         } else {
             result = { done: true };
         }
-        this.index_++;
         return result;
     }
 }
