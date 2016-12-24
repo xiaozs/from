@@ -385,14 +385,17 @@ export default class List<T> implements Iterable<T>{
     }
 }
 
+/**
+ * List类的枚举器
+ */
 class ListIterator<T> implements Iterator<T>{
     private index_ = 0;
-    constructor(private list: List<T>) { }
+    constructor(private list_: List<T>) { }
     async next(): Promise<IterationResult<T>> {
         let result: IterationResult<T>;
-        if (this.index_ < this.list.length()) {
+        if (this.index_ < this.list_.length()) {
             result = {
-                value: this.list.get(this.index_),
+                value: this.list_.get(this.index_),
                 done: false
             }
         } else {
