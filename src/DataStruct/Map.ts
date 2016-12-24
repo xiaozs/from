@@ -1,10 +1,11 @@
 import { KeyValuePair, MapObject } from "Interface";
 import * as Type from "Type";
+import { Iterable, Iterator, IterationResult } from "Interface";
 
 /**
- * 
+ * 保存键值对的Map对象
  */
-export default class Map<T> {
+export default class Map<T> implements Iterable<KeyValuePair<T>>{
     /**
      * 用于存储键值对的数组
      */
@@ -146,7 +147,38 @@ export default class Map<T> {
     /**
      * 返回一个由KeyValuePair对象组成的原生数组
      */
-    KeyValuePairs(): KeyValuePair<T>[] {
+    keyValuePairs(): KeyValuePair<T>[] {
         return this.keyValuePairArray_.slice();
+    }
+
+    /**
+     * 生成枚举器
+     */
+    getIterator(): Iterator<KeyValuePair<T>> {
+        return new MapIterator(this);
+    }
+}
+
+/**
+ * Map类的枚举器
+ */
+class MapIterator<T> implements Iterator<KeyValuePair<T>>{
+    private keyValuePairs_: KeyValuePair<T>[];
+    private index_: number = 0;
+    constructor(map: Map<T>) {
+        this.keyValuePairs_ = map.keyValuePairs();
+    }
+    async next(): Promise<IterationResult<KeyValuePair<T>>> {
+        let result: IterationResult<KeyValuePair<T>>;
+        if (this.index_ < this.keyValuePairs_.length) {
+            result = {
+                value: this.keyValuePairs_[this.index_],
+                done: false
+            }
+        } else {
+            result = { done: true };
+        }
+        this.index_++;
+        return result;
     }
 }
