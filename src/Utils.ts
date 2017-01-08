@@ -12,16 +12,28 @@ export function trim(str: string): string {
  * 数组枚举器
  */
 export class ArrayIterator<T> implements Iterator<T>{
-    private list_: T[];
+    /**
+     * 被枚举的数组的副本
+     */
+    private array_: T[];
+    /**
+     * 当前被枚举到的索引
+     */
     private index_ = 0;
-    constructor(list: T[]) {
-        this.list_ = list.slice();
+    /**
+     * @param array 需要生产枚举器的数组
+     */
+    constructor(array: T[]) {
+        this.array_ = array.slice();
     }
+    /**
+     * 获得一个枚举结果
+     */
     next(): IterationResult<T> {
         let result: IterationResult<T>;
-        if (this.index_ < this.list_.length) {
+        if (this.index_ < this.array_.length) {
             result = {
-                value: this.list_[this.index_],
+                value: this.array_[this.index_],
                 done: false
             }
             this.index_++;
