@@ -1,5 +1,6 @@
 import * as Type from "Type";
 import * as Error from "Error";
+import { ArrayIterator } from "Utils";
 import { Iterable, Iterator, IterationResult } from "Interface";
 
 /**
@@ -381,30 +382,6 @@ export default class List<T> implements Iterable<T>{
      * 生成枚举器
      */
     getIterator(): Iterator<T> {
-        return new ListIterator(this);
-    }
-}
-
-/**
- * List类的枚举器
- */
-class ListIterator<T> implements Iterator<T>{
-    private list_: T[];
-    private index_ = 0;
-    constructor(list: List<T>) {
-        this.list_ = list.toArray();
-    }
-    next(): IterationResult<T> {
-        let result: IterationResult<T>;
-        if (this.index_ < this.list_.length) {
-            result = {
-                value: this.list_[this.index_],
-                done: false
-            }
-            this.index_++;
-        } else {
-            result = { done: true };
-        }
-        return result;
+        return new ArrayIterator(this.innerArray_);
     }
 }

@@ -1,5 +1,6 @@
-import { KeyValuePair, MapObject } from "Interface";
 import * as Type from "Type";
+import { ArrayIterator } from "Utils";
+import { KeyValuePair, MapObject } from "Interface";
 import { Iterable, Iterator, IterationResult } from "Interface";
 
 /**
@@ -155,30 +156,6 @@ export default class Map<T> implements Iterable<KeyValuePair<T>>{
      * 生成枚举器
      */
     getIterator(): Iterator<KeyValuePair<T>> {
-        return new MapIterator(this);
-    }
-}
-
-/**
- * Map类的枚举器
- */
-class MapIterator<T> implements Iterator<KeyValuePair<T>>{
-    private keyValuePairs_: KeyValuePair<T>[];
-    private index_: number = 0;
-    constructor(map: Map<T>) {
-        this.keyValuePairs_ = map.keyValuePairs();
-    }
-    next(): IterationResult<KeyValuePair<T>> {
-        let result: IterationResult<KeyValuePair<T>>;
-        if (this.index_ < this.keyValuePairs_.length) {
-            result = {
-                value: this.keyValuePairs_[this.index_],
-                done: false
-            }
-            this.index_++;
-        } else {
-            result = { done: true };
-        }
-        return result;
+        return new ArrayIterator(this.keyValuePairArray_);
     }
 }
