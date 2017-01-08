@@ -67,14 +67,3 @@ export interface NotDoneIterationResult<T> {
      */
     done: false;
 }
-
-/**
- * 数组或者字符串
- */
-export interface ArrayOrString<T> {
-    [index: number]: T;
-    /**
-     * 数组或者字符串的长度
-     */
-    length: number;
-}
