@@ -67,3 +67,21 @@ export interface NotDoneIterationResult<T> {
      */
     done: false;
 }
+
+
+export interface Predicate<T> {
+    (item: T, index: number): boolean;
+}
+export interface Comparer<T> {
+    (a: T, b: T): boolean;
+}
+export interface Selector<I, O> {
+    (item: I): O;
+}
+
+/**
+ * 构造函数接口
+ */
+export interface IConstructor<T> {
+    new (): T;
+}

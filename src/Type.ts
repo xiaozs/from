@@ -1,3 +1,4 @@
+import { IConstructor } from "./Interface";
 /**
  * 一组用于推断javascript对象的类型的函数。
  */
@@ -7,13 +8,6 @@ let toString = Object.prototype.toString;
 
 let isTypeArray = isType("Array");
 let isTypeObject = isType("Object");
-
-/**
- * 构造函数接口
- */
-export interface IConstructor<T> {
-    new (): T;
-}
 
 /**
  * 用于生成能够判断对应类型的函数的高阶函数
