@@ -149,19 +149,20 @@ interface ProxyNext<I, O, C> {
 class ProxyIterable<I, O, C> implements Iterable<O>{
     constructor(
         private iterable: Iterable<I>,
-        private proxyNext: ProxyNext<I, O, C>
+        private proxyNext: ProxyNext<I, O, C>,
+        private contextGenerator: () => C
     ) { }
     getIterator(): Iterator<O> {
         let it = this.iterable.getIterator();
-        return new ProxyIterator(it, this.proxyNext);
+        return new ProxyIterator(it, this.proxyNext, this.contextGenerator());
     }
 }
 class ProxyIterator<I, O, C> implements Iterator<O>{
     private currentIndex_ = 0;
-    private context_: any = {};
     constructor(
         private iterator: Iterator<I>,
-        private proxyNext: ProxyNext<I, O, C>
+        private proxyNext: ProxyNext<I, O, C>,
+        private context_: C
     ) { }
     next(): IterationResult<O> {
         let itResult = this.proxyNext(this.iterator, this.currentIndex_, this.context_);
