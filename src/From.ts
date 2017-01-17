@@ -147,6 +147,9 @@ function defaultComparer<T>(a: T, b: T) {
 interface ProxyNext<I, O, C> {
     (iterator: Iterator<I>, context: C): IterationResult<O>;
 }
+/**
+ * 
+ */
 class ProxyIterable<I, O, C> implements Iterable<O>{
     constructor(
         private iterable: Iterable<I>,
