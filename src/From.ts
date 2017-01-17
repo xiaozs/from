@@ -596,7 +596,20 @@ class Ext<T> implements Iterable<T> {
      * 
      */
     except(second: Extable<T>, comparer: Comparer<T> = defaultComparer): Ext<T> {
-
+        let iterable = new ProxyIterable(this.distinct(comparer), (it, iterable2) => {
+            let itResult: IterationResult<T>;
+            for (itResult = it.next(); !itResult.done; itResult = it.next()) {
+                let value = itResult.value;
+                let flag = iterable2.contains(value, comparer);
+                if (!flag) {
+                    return itResult;
+                }
+            }
+            return itResult;
+        }, () => {
+            return from(<T[]>second);
+        });
+        return new Ext(iterable);
     }
 
     /**
