@@ -198,13 +198,10 @@ class Ext<T> implements Iterable<T> {
      * 返回数组
      */
     toArray(): T[] {
-        let it = this.iterable.getIterator();
-        let itResult: IterationResult<T>;
         let arr: T[] = [];
-        for (itResult = it.next(); !itResult.done; itResult = it.next()) {
-            let value = itResult.value;
-            arr.push(value);
-        }
+        this.forEach(item => {
+            arr.push(item);
+        })
         return arr;
     }
 
@@ -234,13 +231,9 @@ class Ext<T> implements Iterable<T> {
      * @param predicate 用于判断元素是否符合条件的回调函数
      */
     count(predicate: Predicate<T> = defaultPredicate): number {
-        let it = this.iterable.getIterator();
-        let itResult: IterationResult<T>;
-        let count = 0;
-        for (itResult = it.next(); !itResult.done; itResult = it.next()) {
-            count++;
-        }
-        return count;
+        return this.aggregate(0, count => {
+            return count + 1;
+        })
     }
 
     /**
@@ -248,25 +241,22 @@ class Ext<T> implements Iterable<T> {
      * @param selector 将元素转换为数字
      */
     sum(selector?: Selector<T, number>): number {
-        let it = this.iterable.getIterator();
-        let itResult: IterationResult<T>;
-        let total = 0;
+        let total: number;
         let count = 0;
-
         if (Type.isFunction(selector)) {
-            for (itResult = it.next(); !itResult.done; itResult = it.next(), count++) {
-                let value = itResult.value;
-                total += selector(value);
-            }
+            total = this.aggregate(0, (total, value) => {
+                count++;
+                return total + selector(value);
+            })
         } else {
-            for (itResult = it.next(); !itResult.done; itResult = it.next(), count++) {
-                let value = itResult.value;
+            total = this.aggregate(0, (total, value) => {
+                count++;
                 if (Type.isNumber(value)) {
-                    total += value;
+                    return total + value;
                 } else {
                     throw new Error();
                 }
-            }
+            })
         }
 
         if (count === 0) {
@@ -334,25 +324,22 @@ class Ext<T> implements Iterable<T> {
      * @param selector 应用于每个元素的转换函数
      */
     average(selector?: Selector<T, number>): number {
-        let it = this.iterable.getIterator();
-        let itResult: IterationResult<T>;
-        let total = 0;
+        let total: number;
         let count = 0;
-
         if (Type.isFunction(selector)) {
-            for (itResult = it.next(); !itResult.done; itResult = it.next(), count++) {
-                let value = itResult.value;
-                total += selector(value);
-            }
+            total = this.aggregate(0, (total, value) => {
+                count++;
+                return total + selector(value);
+            })
         } else {
-            for (itResult = it.next(); !itResult.done; itResult = it.next(), count++) {
-                let value = itResult.value;
+            total = this.aggregate(0, (total, value) => {
+                count++;
                 if (Type.isNumber(value)) {
-                    total += value;
+                    return total + value;
                 } else {
                     throw new Error();
                 }
-            }
+            })
         }
 
         if (count === 0) {
@@ -401,22 +388,17 @@ class Ext<T> implements Iterable<T> {
                 prev = func(prev, current);
             }
             return prev;
-        } else if (argsLength === 2) {
-            let seed = <S>funcOrSeed;
-            let prev = seed;
-            for (itResult = it.next(); !itResult.done; itResult = it.next(), index++) {
-                current = itResult.value;
-                prev = (func as (prev: S, current: T) => S)(prev, current);
-            }
-            return prev;
         } else {
             let seed = <S>funcOrSeed;
             let prev = seed;
-            for (itResult = it.next(); !itResult.done; itResult = it.next(), index++) {
-                current = itResult.value;
+            this.forEach(current => {
                 prev = (func as (prev: S, current: T) => S)(prev, current);
+            })
+            if (argsLength === 2) {
+                return prev;
+            } else {
+                return (resultSelector as Selector<S, R>)(prev);
             }
-            return (resultSelector as Selector<S, R>)(prev);
         }
     }
 
@@ -496,31 +478,30 @@ class Ext<T> implements Iterable<T> {
         return this.firstOrDefault.apply(this, argsArr);
     }
 
+    /**
+     * 返回序列中满足指定条件的唯一元素；如果这类元素不存在，则返回默认值；如果有多个元素满足该条件，此方法将引发异常。
+     * @param predicate 用于测试元素是否满足条件的函数
+     * @param defaultValue 默认值
+     */
     singleOrDefault(predicate: Predicate<T> = defaultPredicate, defaultValue?: T): T {
-        let it = this.iterable.getIterator();
-        let itResult: IterationResult<T>;
         let count = 0;
-        let index = 0;
         let result: T = <any>null;
-        for (itResult = it.next(); !itResult.done; itResult = it.next(), index++) {
-            let value = itResult.value;
+        this.forEach((value, index) => {
             let flag = predicate(value, index);
             if (flag) {
                 result = value;
                 count++;
                 if (count >= 2) {
-                    break;
+                    return true;
                 }
             }
-        }
-        if (count !== 1) {
-            if (arguments.length >= 2) {
-                return <T>defaultValue;
-            } else {
-                throw new Error();
-            }
-        } else {
+        })
+        if (count === 1) {
             return result;
+        } else if (arguments.length >= 2) {
+            return <T>defaultValue;
+        } else {
+            throw new Error();
         }
     }
     //集合操作符
@@ -539,6 +520,12 @@ class Ext<T> implements Iterable<T> {
     zip<S, R>(second: Extable<S>, resultSelector: (a: T, b: S) => R): Ext<R> {
 
     }
+
+    /**
+     * 对两个序列的元素进行比较，以确定序列是否相等
+     * @param second 用于与当前序列进行比较
+     * @param comparer 一个用于比较元素的函数
+     */
     SequenceEqual(second: Extable<T>, comparer: Comparer<T> = defaultComparer): boolean {
         let it1 = this.iterable.getIterator();
         let it2 = from(<Iterable<T>>second).getIterator();
@@ -555,15 +542,22 @@ class Ext<T> implements Iterable<T> {
             }
             let value1 = (<NotDoneIterationResult<T>>itResult1).value;
             let value2 = (<NotDoneIterationResult<T>>itResult2).value;
-            let isEqual = defaultComparer(value1, value2);
+            let isEqual = comparer(value1, value2);
             if (!isEqual) {
                 return false;
             }
         }
     }
-    //过滤操作符
-    where(predicate: Predicate<T>): Ext<T> {
 
+    /**
+     * 
+     */
+    where(predicate: Predicate<T>): Ext<T> {
+        let iterable = new ProxyIterable(this, () => {
+
+        })
+
+        return new Ext();
     }
     OfType<U>(constructor: IConstructor<U>): Ext<U> {
 
@@ -636,13 +630,13 @@ class Ext<T> implements Iterable<T> {
     skip(count: number): Ext<T> {
 
     }
-    skipWhile(predicate: Predicate): Ext<T> {
+    skipWhile(predicate: Predicate<T>): Ext<T> {
 
     }
     take(count: number): Ext<T> {
 
     }
-    takeWhile(predicate: Predicate): Ext<T> {
+    takeWhile(predicate: Predicate<T>): Ext<T> {
 
     }
 }
