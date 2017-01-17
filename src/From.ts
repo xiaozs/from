@@ -9,6 +9,7 @@ import { DoneIterationResult, NotDoneIterationResult } from "Interface";
 
 /**
  * from函数支持的3中类型
+ * //todo,MapObject有问题
  */
 type Extable<T> = Iterable<T> | T[] | MapObject<T>;
 
@@ -144,28 +145,27 @@ function defaultComparer<T>(a: T, b: T) {
 
 
 interface ProxyNext<I, O, C> {
-    (iterator: Iterator<I>, index: number, countext: C): IterationResult<O>;
+    (iterator: Iterator<I>, context: C): IterationResult<O>;
 }
 class ProxyIterable<I, O, C> implements Iterable<O>{
     constructor(
         private iterable: Iterable<I>,
-        private proxyNext: ProxyNext<I, O, C>
+        private proxyNext: ProxyNext<I, O, C>,
+        private contextGenerator: () => C
     ) { }
     getIterator(): Iterator<O> {
         let it = this.iterable.getIterator();
-        return new ProxyIterator(it, this.proxyNext);
+        return new ProxyIterator(it, this.proxyNext, this.contextGenerator());
     }
 }
 class ProxyIterator<I, O, C> implements Iterator<O>{
-    private currentIndex_ = 0;
-    private context_: any = {};
     constructor(
         private iterator: Iterator<I>,
-        private proxyNext: ProxyNext<I, O, C>
+        private proxyNext: ProxyNext<I, O, C>,
+        private context: C
     ) { }
     next(): IterationResult<O> {
-        let itResult = this.proxyNext(this.iterator, this.currentIndex_, this.context_);
-        this.currentIndex_++;
+        let itResult = this.proxyNext(this.iterator, this.context);
         return itResult;
     }
 }
@@ -550,37 +550,112 @@ class Ext<T> implements Iterable<T> {
     }
 
     /**
-     * 
+     * 基于谓词筛选值序列
+     * @param predicate 用于测试每个元素是否满足条件的函数
      */
     where(predicate: Predicate<T>): Ext<T> {
-        let iterable = new ProxyIterable(this, () => {
-
-        })
-
-        return new Ext();
+        let iterable = new ProxyIterable(this, (it, context) => {
+            let itResult: IterationResult<T>;
+            for (itResult = it.next(); !itResult.done; itResult = it.next(), context.index++) {
+                let flag = predicate(itResult.value, context.index);
+                if (flag) {
+                    return itResult;
+                }
+            }
+            return itResult;
+        }, () => {
+            return {
+                index: 0
+            }
+        });
+        return new Ext(iterable);
     }
+
+    /**
+     * 根据指定类型筛选元素
+     * @param constructor 需要筛选的元素的构造函数
+     */
     OfType<U>(constructor: IConstructor<U>): Ext<U> {
-
+        return <any>this.where(item => Type.is(item, constructor));
     }
-    distinct(comparer?: Comparer<T>): Ext<T> {
 
+    /**
+     * 对值进行比较返回序列中的非重复元素
+     * @param comparer 用于比较值的函数
+     */
+    distinct(comparer: Comparer<T> = defaultComparer): Ext<T> {
+        let iterable = new ProxyIterable(this, (it, resultArr) => {
+            let itResult: IterationResult<T>;
+            for (itResult = it.next(); !itResult.done; itResult = it.next()) {
+                let value = itResult.value;
+                let flag = from(resultArr).contains(value, comparer);
+                if (!flag) {
+                    resultArr.push(value);
+                    return itResult;
+                }
+            }
+            return itResult;
+        }, () => {
+            let resultArr: T[] = [];
+            return resultArr;
+        });
+        return new Ext(iterable);
     }
-    //投影操作符
+
+    /**
+     * 通过合并元素的索引将序列的每个元素投影到新表中
+     * @param selector 一个应用于每个源元素的转换函数；函数的第二个参数表示源元素的索引
+     */
     select<S>(selector: (item: T, index: number) => S): Ext<S> {
-
+        let iterable = new ProxyIterable(this, (it, context) => {
+            let itResult = it.next();
+            if (itResult.done) {
+                return itResult;
+            } else {
+                return {
+                    done: false,
+                    value: selector(itResult.value, context.index++)
+                }
+            }
+        }, () => {
+            return {
+                index: 0
+            }
+        });
+        return new Ext(iterable);
     }
+
+    /**
+     * 将序列的每个元素投影并将结果序列合并为一个序列
+     * @param selector 应用于每个元素的转换函数
+     */
     SelectMany<TResult>(
         selector: (item: T, index: number) => Extable<TResult>
-    ): Extable<TResult>;
+    ): Ext<TResult>;
+    /**
+     * 将序列的每个元素投影并将结果序列合并为一个序列，并对其中每个元素调用结果选择器函数
+     * @param collectionSelector 一个应用于输入序列的每个元素的转换函数
+     * @param resultSelector 一个应用于中间序列的每个元素的转换函数
+     */
     SelectMany<TCollection, TResult>(
         collectionSelector: (item: T, index: number) => Extable<TCollection>,
         resultSelector: (item: T, collection: TCollection) => TResult
-    ): Extable<TResult>;
+    ): Ext<TResult>;
     SelectMany<TCollection, TResult>(
-        collectionSelector: (item: T, index: number) => Extable<TResult | TCollection>,
+        collectionSelector: (item: T, index: number) => Extable<TResult> | Extable<TCollection>,
         resultSelector?: (item: T, collection: TCollection) => TResult
-    ): Extable<TResult> {
+    ): Ext<TResult> {
+        let argsLength = arguments.length;
+        let iterable = new ProxyIterable(this, (it, context) => {
+            if (argsLength === 2) {
 
+            } else {
+
+            }
+        }, () => {
+
+        });
+        return new Ext(iterable);
     }
 
     /**
@@ -626,17 +701,76 @@ class Ext<T> implements Iterable<T> {
             return flag;
         })
     }
-    //分区操作符
+
+    /**
+     * 跳过序列中指定数量的元素，然后返回剩余的元素
+     * @param count 返回剩余元素前要跳过的元素数量
+     */
     skip(count: number): Ext<T> {
-
+        return this.where((_, index) => {
+            return index >= count;
+        })
     }
+
+    /**
+     * 只要满足指定的条件，就跳过序列中的元素，然后返回剩余元素
+     * @param predicate 用于测试每个源元素是否满足条件的函数
+     */
     skipWhile(predicate: Predicate<T>): Ext<T> {
-
+        let iterable = new ProxyIterable(this, (it, context) => {
+            if (context.isEnd) {
+                return it.next();
+            }
+            let itResult: IterationResult<T>;
+            for (itResult = it.next(); !itResult.done; itResult = it.next(), context.index++) {
+                let flag = predicate(itResult.value, context.index);
+                if (!flag) {
+                    break;
+                }
+            }
+            context.isEnd = true;
+            return itResult;
+        }, () => {
+            return {
+                isEnd: false,
+                index: 0
+            }
+        });
+        return new Ext(iterable);
     }
+
+    /**
+     * 从序列的开头返回指定数量的连续元素
+     * @param count 要返回的元素数量
+     */
     take(count: number): Ext<T> {
-
+        return this.where((_, index) => {
+            return index < count;
+        })
     }
-    takeWhile(predicate: Predicate<T>): Ext<T> {
 
+    /**
+     * 只要满足指定的条件，就会返回序列的元素
+     * @param predicate 用于测试每个源元素是否满足条件的函数
+     */
+    takeWhile(predicate: Predicate<T>): Ext<T> {
+        let iterable = new ProxyIterable(this, (it, context) => {
+            if (context.isEnd) {
+                return { done: true };
+            }
+            let itResult = it.next();
+            if (!itResult.done && predicate(itResult.value, context.index)) {
+                context.index++;
+            } else {
+                context.isEnd = true;
+            }
+            return itResult
+        }, () => {
+            return {
+                isEnd: false,
+                index: 0
+            }
+        });
+        return new Ext(iterable);
     }
 }
