@@ -573,14 +573,21 @@ class Ext<T> implements Iterable<T> {
      * @param comparer 用于比较值的函数
      */
     intersect(second: Extable<T>, comparer: Comparer<T> = defaultComparer): Ext<T> {
-        let iterable = new ProxyIterable(this.distinct(comparer), (it, it2) => {
+        let iterable = new ProxyIterable(this, (_, context) => {
             let itResult2: IterationResult<T>;
-            for (itResult2 = it2.next(); !itResult2.done; itResult2 = it2.next()) {
-
+            for (itResult2 = context.it2.next(); !itResult2.done; itResult2 = context.it2.next()) {
+                let value = itResult2.value;
+                let flag = context.first.contains(value, comparer);
+                if (flag) {
+                    return itResult2;
+                }
             }
             return itResult2;
         }, () => {
-            return from(<T[]>second).getIterator()
+            return {
+                first: this.distinct(comparer),
+                it2: from(<T[]>second).getIterator()
+            }
         });
         return new Ext(iterable);
     }
