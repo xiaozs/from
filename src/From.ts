@@ -583,13 +583,44 @@ class Ext<T> implements Iterable<T> {
     }
 
     /**
-     * 
+     * 在序列之后添加新元素
+     * @param item 新元素
      */
     append(item: T): Ext<T> {
-
+        let iterable = new ProxyIterable(this, (it, context) => {
+            let itResult = it.next();
+            if (itResult.done && !context.done) {
+                context.done = true;
+                return { done: false, value: item };
+            } else {
+                return itResult;
+            }
+        }, () => {
+            return {
+                done: false
+            }
+        });
+        return new Ext(iterable);
     }
-    prepend(item: T): Ext<T> {
 
+    /**
+     * 在序列最前添加新元素
+     * @param item 新元素
+     */
+    prepend(item: T): Ext<T> {
+        let iterable = new ProxyIterable(this, (it, context) => {
+            if (context.readFirst) {
+                context.readFirst = false;
+                return { done: false, value: item };
+            } else {
+                return it.next();
+            }
+        }, () => {
+            return {
+                readFirst: true
+            }
+        });
+        return new Ext(iterable);
     }
 
     /**
