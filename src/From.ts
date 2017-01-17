@@ -407,7 +407,7 @@ class Ext<T> implements Iterable<T> {
      * @param predicate 用于测试每个元素是否满足条件的函数
      * @param defaultValue 默认值
      */
-    firstOrDefault(predicate: Predicate<T> = defaultPredicate, defaultValue?: T): T {
+    first(predicate: Predicate<T> = defaultPredicate, defaultValue?: T): T {
         let it = this.iterable.getIterator();
         let itResult: IterationResult<T>;
         let index = 0;
@@ -437,7 +437,7 @@ class Ext<T> implements Iterable<T> {
      * @param predicate 用于测试每个元素是否满足条件的函数
      * @param defaultValue 默认值
      */
-    lastOrDefault(predicate: Predicate<T> = defaultPredicate, defaultValue?: T): T {
+    last(predicate: Predicate<T> = defaultPredicate, defaultValue?: T): T {
         let it = this.iterable.getIterator();
         let itResult: IterationResult<T>;
         let index = 0;
@@ -466,7 +466,7 @@ class Ext<T> implements Iterable<T> {
      * @param index 要检索的从零开始的元素索引
      * @param defaultValue 默认值
      */
-    elementAtOrDefault(index: number, defaultValue?: T): T {
+    elementAt(index: number, defaultValue?: T): T {
         let argsArr = [];
         let filterFn = (_: T, i: number) => {
             return index === i;
@@ -475,7 +475,7 @@ class Ext<T> implements Iterable<T> {
         if (arguments.length >= 2) {
             argsArr.push(defaultValue);
         }
-        return this.firstOrDefault.apply(this, argsArr);
+        return this.first.apply(this, argsArr);
     }
 
     /**
@@ -483,7 +483,7 @@ class Ext<T> implements Iterable<T> {
      * @param predicate 用于测试元素是否满足条件的函数
      * @param defaultValue 默认值
      */
-    singleOrDefault(predicate: Predicate<T> = defaultPredicate, defaultValue?: T): T {
+    single(predicate: Predicate<T> = defaultPredicate, defaultValue?: T): T {
         let count = 0;
         let result: T = <any>null;
         this.forEach((value, index) => {
@@ -504,20 +504,88 @@ class Ext<T> implements Iterable<T> {
             throw new Error();
         }
     }
-    //集合操作符
+
+    /**
+     * 生成两个序列的并集
+     * @param second 它的非重复元素构成联合的第二个集
+     * @param comparer 用于对值进行比较的函数
+     */
     union(second: Extable<T>, comparer: Comparer<T> = defaultComparer): Ext<T> {
-
+        let iterable = new ProxyIterable(this, (_, context) => {
+            let itResult: IterationResult<T>;
+            while (true) {
+                itResult = context.it.next()
+                if (itResult.done) {
+                    if (context.isFirst) {
+                        context.isFirst = false;
+                        context.it = from(<T[]>second).getIterator();
+                    } else {
+                        return { done: true };
+                    }
+                } else {
+                    let value = itResult.value;
+                    let flag = from(context.resultArr).contains(value, comparer);
+                    if (!flag) {
+                        context.resultArr.push(value);
+                        return itResult;
+                    }
+                }
+            }
+        }, () => {
+            let resultArr: T[] = [];
+            return {
+                isFirst: true,
+                it: this.getIterator(),
+                resultArr: resultArr
+            }
+        });
+        return new Ext(iterable);
     }
+
+    /**
+     * 连接两个序列
+     * @param second 要与第一个序列连接的序列
+     */
     concat(second: Extable<T>): Ext<T> {
+        let iterable = new ProxyIterable(this, (_, context) => {
+            let itResult = context.it.next();
+            if (itResult.done && context.isFirst) {
+                context.isFirst = false;
+                context.it = from(<T[]>second).getIterator();
+                itResult = context.it.next();
+            }
+            return itResult;
+        }, () => {
+            return {
+                isFirst: true,
+                it: this.getIterator()
+            }
+        });
+        return new Ext(iterable);
+    }
+
+    /**
+     * 生成两个序列的交集
+     * @param second 将返回其也出现在第一个序列中的非重复元素
+     * @param comparer 用于比较值的函数
+     */
+    intersect(second: Extable<T>, comparer: Comparer<T> = defaultComparer): Ext<T> {
 
     }
-    intersect(second: Extable<T>, comparer?: (a: T, b: T) => boolean): Ext<T> {
-
-    }
-    except(second: Extable<T>, comparer?: (a: T, b: T) => boolean): Ext<T> {
+    except(second: Extable<T>, comparer: Comparer<T> = defaultComparer): Ext<T> {
 
     }
     zip<S, R>(second: Extable<S>, resultSelector: (a: T, b: S) => R): Ext<R> {
+
+    }
+
+    /**
+     * 
+     */
+    append(item: T): Ext<T> {
+
+    }
+    prepend(item: T): Ext<T> {
 
     }
 
