@@ -575,11 +575,35 @@ class Ext<T> implements Iterable<T> {
     intersect(second: Extable<T>, comparer: Comparer<T> = defaultComparer): Ext<T> {
 
     }
+
+    /**
+     * 
+     */
     except(second: Extable<T>, comparer: Comparer<T> = defaultComparer): Ext<T> {
 
     }
-    zip<S, R>(second: Extable<S>, resultSelector: (a: T, b: S) => R): Ext<R> {
 
+    /**
+     * 
+     */
+    zip<S, R>(second: Extable<S>, resultSelector: (a: T, b: S) => R): Ext<R> {
+        let iterable = new ProxyIterable(this, (it, context) => {
+            let itResult = it.next();
+            let itResult2 = context.it2.next();
+            if (!itResult.done && !itResult2.done) {
+                return {
+                    done: false,
+                    value: resultSelector(itResult.value, itResult2.value)
+                }
+            } else {
+                return { done: true };
+            }
+        }, () => {
+            return {
+                it2: from(<S[]>second).getIterator()
+            }
+        });
+        return new Ext(iterable);
     }
 
     /**
