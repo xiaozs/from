@@ -801,14 +801,47 @@ class Ext<T> implements Iterable<T> {
         resultSelector?: (item: T, collection: TCollection) => TResult
     ): Ext<TResult> {
         let argsLength = arguments.length;
-        let iterable = new ProxyIterable(this, (it, context) => {
-            if (argsLength === 2) {
-
-            } else {
-
+        let iterable = new ProxyIterable(this, (outterIt, context) => {
+            while (true) {
+                let innerIt = context.innerIt;
+                if (Type.isVoid(innerIt)) {
+                    let outterItResult: IterationResult<T> = outterIt.next();
+                    if (outterItResult.done) {
+                        return { done: true };
+                    } else {
+                        let innerData = <TCollection[]>collectionSelector(outterItResult.value, context.outterIndex);
+                        innerIt = from(innerData).getIterator();
+                        context.outterIndex++;
+                        context.innerIt = innerIt;
+                        context.outterValue = outterItResult.value;
+                    }
+                }
+                let innerItResult = innerIt.next();
+                if (!innerItResult.done) {
+                    if (argsLength === 1) {
+                        let resSelector = resultSelector as (item: T, collection: TCollection) => TResult;
+                        return {
+                            done: false,
+                            value: resSelector(
+                                context.outterValue as T,
+                                (innerItResult as NotDoneIterationResult<TCollection>).value
+                            )
+                        }
+                    } else {
+                        return innerItResult as NotDoneIterationResult<TResult>;
+                    }
+                } else {
+                    context.innerIt = undefined;
+                }
             }
         }, () => {
-
+            let innerIt: Iterator<TResult> | Iterator<TCollection> | undefined;
+            let outterItResult: T | undefined;
+            return {
+                innerIt: innerIt,
+                outterValue: outterItResult,
+                outterIndex: 0
+            }
         });
         return new Ext(iterable);
     }
