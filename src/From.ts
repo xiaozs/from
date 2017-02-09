@@ -9,9 +9,8 @@ import { DoneIterationResult, NotDoneIterationResult } from "Interface";
 
 /**
  * from函数支持的3中类型
- * //todo,MapObject有问题
  */
-type Extable<T> = Iterable<T> | T[] | MapObject<T>;
+type Extable<T> = Iterable<T> | T[];
 
 /**
  * 返回一个支持多种函数式方法的包装对象
@@ -28,7 +27,7 @@ export default function from<T>(array: T[]): Ext<T>;
  * @param array 需要被包装的MapObject对象
  */
 export default function from<T>(mapObject: MapObject<T>): Ext<KeyValuePair<T>>;
-export default function from<T>(obj: Extable<T>): Ext<T> | Ext<KeyValuePair<T>> {
+export default function from<T>(obj: Extable<T> | MapObject<T>): Ext<T> | Ext<KeyValuePair<T>> {
     if (isIterable(obj)) {
         return new Ext(obj);
     } else if (Type.isArray(obj)) {
@@ -147,9 +146,6 @@ function defaultComparer<T>(a: T, b: T) {
 interface ProxyNext<I, O, C> {
     (iterator: Iterator<I>, context: C): IterationResult<O>;
 }
-/**
- * 
- */
 class ProxyIterable<I, O, C> implements Iterable<O>{
     constructor(
         private iterable: Iterable<I>,
@@ -870,7 +866,7 @@ class Ext<T> implements Iterable<T> {
         let result = true;
         this.forEach((item, index) => {
             let flag = predicate(item, index);
-            if (flag) {
+            if (!flag) {
                 result = false;
                 return true;
             }
