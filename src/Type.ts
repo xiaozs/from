@@ -1,4 +1,4 @@
-import { IConstructor } from "./Interface";
+import { IConstructor } from "Interface";
 /**
  * 一组用于推断javascript对象的类型的函数。
  */

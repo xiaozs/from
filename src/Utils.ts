@@ -1,4 +1,4 @@
-import { Iterator, IterationResult } from './Interface';
+import { Iterator, IterationResult } from "Interface";
 
 /**
  * 处理字符串，并返回去除两侧空白字符的新字符串

@@ -7,7 +7,7 @@
         "strictNullChecks": true,
         "importHelpers": true,
         "outDir": "dist",
-        "baseUrl": ".",
+        "baseUrl": "src",
         "lib": [
             "dom",
             "es5",
