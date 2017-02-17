@@ -15,7 +15,9 @@ for (var file in window.__karma__.files) {
 
 require.config({
     baseUrl: '/base/src',
-
+    paths: {
+        "tslib": ["../node_modules/tslib/tslib"]
+    },
     // Dynamically require all test files.
     deps: allTestFiles,
 

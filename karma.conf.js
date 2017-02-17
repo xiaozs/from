@@ -4,7 +4,7 @@ module.exports = function (config) {
         frameworks: ["requirejs", "qunit"],
         files: [
             "./test-main.js",
-
+            "./node_modules/tslib/tslib.js",
             { pattern: "src/**/*.ts", included: false },
             { pattern: "test/**/*.ts", included: false }
         ],
