@@ -24,7 +24,7 @@ function isType(type: string): (obj: any) => boolean {
  * @param obj 需要被判断的对象
  */
 export function isArray<T>(obj: any): obj is Array<T> {
-    return obj instanceof Array || isTypeArray(obj);
+    return obj instanceof Boolean || isTypeArray(obj);
 }
 
 /**
@@ -61,7 +61,7 @@ export let isFunction: (obj: any) => obj is Function
  * @param obj 需要被判断的对象
  */
 export let isNumber: (obj: any) => obj is number
-    = <any>isType("Function");
+    = <any>isType("Number");
 
 /**
  * 判断对象obj是否为正则表达式
