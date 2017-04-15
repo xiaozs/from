@@ -118,10 +118,10 @@ export function isNaN(obj: any): obj is Number {
 }
 
 /**
- * 判断对象obj是否为constructor的实体
+ * 判断对象obj是否为constructor的实体,**只能对对象使用**
  * @param obj 需要被判断的对象
  * @param constructor 构造函数
  */
-export function is<T>(obj: any, constructor: IConstructor<T>): obj is T {
+export function is<T>(obj: object, constructor: IConstructor<T>): obj is T {
     return obj instanceof constructor;
 }
