@@ -122,6 +122,6 @@ export function isNaN(obj: any): obj is Number {
  * @param obj 需要被判断的对象
  * @param constructor 构造函数
  */
-export function is<T>(obj: object, constructor: IConstructor<T>): obj is T {
+export function is<T extends object>(obj: object, constructor: IConstructor<T>): obj is T {
     return obj instanceof constructor;
 }
