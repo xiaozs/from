@@ -118,7 +118,7 @@ export function isNaN(obj: any): obj is Number {
 }
 
 /**
- * 判断对象obj是否为constructor的实体
+ * 判断对象obj是否为constructor的实体,**只能对对象使用**
  * @param obj 需要被判断的对象
  * @param constructor 构造函数
  */
