@@ -31,7 +31,7 @@ export function isArray<T>(obj: any): obj is Array<T> {
  * 判断对象obj是否为基本类型以外的对象
  * @param obj 需要被判断的对象
  */
-export function isObject(obj: any): obj is Object {
+export function isObject(obj: any): obj is object {
     return obj != null && isTypeObject(obj);
 }
 
