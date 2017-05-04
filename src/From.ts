@@ -724,10 +724,57 @@ class Ext<T> implements Iterable<T> {
 
     /**
      * 根据指定类型筛选元素
+     * @param type 需要筛选元素的类型的字符串
+     */
+    ofType(type: "Boolean"): Ext<boolean>;
+    /**
+     * 根据指定类型筛选元素
+     * @param type 需要筛选元素的类型的字符串
+     */
+    ofType(type: "Date"): Ext<Date>;
+    /**
+     * 根据指定类型筛选元素
+     * @param type 需要筛选元素的类型的字符串
+     */
+    ofType(type: "Function"): Ext<Function>;
+    /**
+     * 根据指定类型筛选元素
+     * @param type 需要筛选元素的类型的字符串
+     */
+    ofType(type: "Number"): Ext<number>;
+    /**
+     * 根据指定类型筛选元素
+     * @param type 需要筛选元素的类型的字符串
+     */
+    ofType(type: "RegExp"): Ext<RegExp>;
+    /**
+     * 根据指定类型筛选元素
+     * @param type 需要筛选元素的类型的字符串
+     */
+    ofType(type: "String"): Ext<string>;
+    /**
+     * 根据指定类型筛选元素
      * @param constructor 需要筛选的元素的构造函数
      */
-    OfType<U>(constructor: IConstructor<U>): Ext<U> {
-        return <any>this.where(item => Type.is(item, constructor));
+    ofType<U extends object>(constructor: IConstructor<U>): Ext<U>;
+    ofType<U extends object>(stringOrconstructor: string | IConstructor<U>): Ext<U> {
+        return <any>this.where(item => {
+            if (stringOrconstructor === "Boolean") {
+                return Type.isBool(item);
+            } else if (stringOrconstructor === "Date") {
+                return Type.isDate(item);
+            } else if (stringOrconstructor === "Function") {
+                return Type.isFunction(item);
+            } else if (stringOrconstructor === "Number") {
+                return Type.isNumber(item);
+            } else if (stringOrconstructor === "RegExp") {
+                return Type.isRegExp(item);
+            } else if (stringOrconstructor === "String") {
+                return Type.isString(item);
+            } else {
+                return Type.is(<any>item, stringOrconstructor as IConstructor<U>);
+            }
+        });
     }
 
     /**
