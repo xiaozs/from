@@ -17,7 +17,7 @@ function defaultComparer<T>(a: T, b: T) {
     return a === b;
 }
 
-class Ext<T> implements Iterable<T>{
+export default class From<T> implements Iterable<T>{
     constructor(private iterable: Iterable<T>) { }
     [Symbol.iterator]() {
         return this.iterable[Symbol.iterator]();
@@ -156,9 +156,9 @@ class Ext<T> implements Iterable<T>{
      * 连接两个序列
      * @param second 要与第一个序列连接的序列
      */
-    concat(second: Iterable<T>): Ext<T> {
+    concat(second: Iterable<T>): From<T> {
         let that = this;
-        return new Ext({
+        return new From({
             [Symbol.iterator]: function* () {
                 for (let item of that) {
                     yield item;
@@ -201,12 +201,12 @@ class Ext<T> implements Iterable<T>{
      * 如果对象中不存在元素，则返回一个只有默认值的对象
      * @param defaultValue 默认值
      */
-    defaultIfEmpty(defaultValue: T): Ext<T> {
+    defaultIfEmpty(defaultValue: T): From<T> {
         let hasItem = this.any();
         if (hasItem) {
             return this;
         } else {
-            return new Ext([defaultValue]);
+            return new From([defaultValue]);
         }
     }
 
@@ -214,12 +214,12 @@ class Ext<T> implements Iterable<T>{
      * 对值进行比较返回序列中的非重复元素
      * @param comparer 用于比较值的函数
      */
-    distinct(comparer: Comparer<T> = defaultComparer): Ext<T> {
+    distinct(comparer: Comparer<T> = defaultComparer): From<T> {
         let that = this;
-        return new Ext({
+        return new From({
             [Symbol.iterator]: function* () {
                 let resultArr: T[] = [];
-                let resultExt = new Ext(resultArr);
+                let resultExt = new From(resultArr);
                 for (let item of that) {
                     let flag = resultExt.contains(item, comparer);
                     if (!flag) {
@@ -250,11 +250,11 @@ class Ext<T> implements Iterable<T>{
     /**
      * 
      */
-    except(second: Iterable<T>, comparer: Comparer<T> = defaultComparer): Ext<T> {
+    except(second: Iterable<T>, comparer: Comparer<T> = defaultComparer): From<T> {
         let that = this;
-        return new Ext({
+        return new From({
             [Symbol.iterator]: function* () {
-                var secExt = new Ext(second);
+                var secExt = new From(second);
                 for (let item of that) {
                     let flag = secExt.contains(item, comparer);
                     if (!flag) yield item;
@@ -297,9 +297,9 @@ class Ext<T> implements Iterable<T>{
      * @param second 将返回其也出现在第一个序列中的非重复元素
      * @param comparer 用于比较值的函数
      */
-    intersect(second: Iterable<T>, comparer: Comparer<T> = defaultComparer): Ext<T> {
+    intersect(second: Iterable<T>, comparer: Comparer<T> = defaultComparer): From<T> {
         let that = this;
-        return new Ext({
+        return new From({
             [Symbol.iterator]: function* () {
                 for (let item of second) {
                     let flag = that.contains(item, comparer);
@@ -376,38 +376,38 @@ class Ext<T> implements Iterable<T>{
      * 根据指定类型筛选元素
      * @param type 需要筛选元素的类型的字符串
      */
-    ofType(type: "Boolean"): Ext<boolean>;
+    ofType(type: "Boolean"): From<boolean>;
     /**
      * 根据指定类型筛选元素
      * @param type 需要筛选元素的类型的字符串
      */
-    ofType(type: "Date"): Ext<Date>;
+    ofType(type: "Date"): From<Date>;
     /**
      * 根据指定类型筛选元素
      * @param type 需要筛选元素的类型的字符串
      */
-    ofType(type: "Function"): Ext<Function>;
+    ofType(type: "Function"): From<Function>;
     /**
      * 根据指定类型筛选元素
      * @param type 需要筛选元素的类型的字符串
      */
-    ofType(type: "Number"): Ext<number>;
+    ofType(type: "Number"): From<number>;
     /**
      * 根据指定类型筛选元素
      * @param type 需要筛选元素的类型的字符串
      */
-    ofType(type: "RegExp"): Ext<RegExp>;
+    ofType(type: "RegExp"): From<RegExp>;
     /**
      * 根据指定类型筛选元素
      * @param type 需要筛选元素的类型的字符串
      */
-    ofType(type: "String"): Ext<string>;
+    ofType(type: "String"): From<string>;
     /**
      * 根据指定类型筛选元素
      * @param constructor 需要筛选的元素的构造函数
      */
-    ofType<U extends object>(constructor: IConstructor<U>): Ext<U>;
-    ofType<U extends object>(stringOrconstructor: string | IConstructor<U>): Ext<U> {
+    ofType<U extends object>(constructor: IConstructor<U>): From<U>;
+    ofType<U extends object>(stringOrconstructor: string | IConstructor<U>): From<U> {
         if (stringOrconstructor === "Boolean") {
             return <any>this.where(item => {
                 return Type.isBool(item);
@@ -443,9 +443,9 @@ class Ext<T> implements Iterable<T>{
      * 通过合并元素的索引将序列的每个元素投影到新表中
      * @param selector 一个应用于每个源元素的转换函数；函数的第二个参数表示源元素的索引
      */
-    select<S>(selector: (item: T, index: number) => S): Ext<S> {
+    select<S>(selector: (item: T, index: number) => S): From<S> {
         let that = this;
-        return new Ext({
+        return new From({
             [Symbol.iterator]: function* () {
                 let index = 0;
                 for (let item of that) {
@@ -461,7 +461,7 @@ class Ext<T> implements Iterable<T>{
      */
     selectMany<TResult>(
         selector: (item: T, index: number) => Iterable<TResult>
-    ): Ext<TResult>;
+    ): From<TResult>;
     /**
      * 将序列的每个元素投影并将结果序列合并为一个序列，并对其中每个元素调用结果选择器函数
      * @param collectionSelector 一个应用于输入序列的每个元素的转换函数
@@ -470,14 +470,14 @@ class Ext<T> implements Iterable<T>{
     selectMany<TCollection, TResult>(
         collectionSelector: (item: T, index: number) => Iterable<TCollection>,
         resultSelector: (item: T, collection: TCollection) => TResult
-    ): Ext<TResult>;
+    ): From<TResult>;
     selectMany<TCollection, TResult>(
         collectionSelector: (item: T, index: number) => Iterable<TResult> | Iterable<TCollection>,
         resultSelector?: (item: T, collection: TCollection) => TResult
-    ): Ext<TResult> {
+    ): From<TResult> {
         let that = this;
         let argsLength = arguments.length;
-        return new Ext({
+        return new From({
             [Symbol.iterator]: function* () {
                 let index = 0;
                 if (argsLength === 1) {
@@ -558,7 +558,7 @@ class Ext<T> implements Iterable<T>{
      * 跳过序列中指定数量的元素，然后返回剩余的元素
      * @param count 返回剩余元素前要跳过的元素数量
      */
-    skip(count: number): Ext<T> {
+    skip(count: number): From<T> {
         return this.where((_, index) => {
             return index >= count;
         })
@@ -568,9 +568,9 @@ class Ext<T> implements Iterable<T>{
      * 只要满足指定的条件，就跳过序列中的元素，然后返回剩余元素
      * @param predicate 用于测试每个源元素是否满足条件的函数
      */
-    skipWhile(predicate: Predicate<T>): Ext<T> {
+    skipWhile(predicate: Predicate<T>): From<T> {
         let that = this;
-        return new Ext({
+        return new From({
             [Symbol.iterator]: function* () {
                 let index = 0;
                 let it = that[Symbol.iterator]();
@@ -625,7 +625,7 @@ class Ext<T> implements Iterable<T>{
      * 从序列的开头返回指定数量的连续元素
      * @param count 要返回的元素数量
      */
-    take(count: number): Ext<T> {
+    take(count: number): From<T> {
         return this.where((_, index) => {
             return index < count;
         })
@@ -635,9 +635,9 @@ class Ext<T> implements Iterable<T>{
      * 只要满足指定的条件，就会返回序列的元素
      * @param predicate 用于测试每个源元素是否满足条件的函数
      */
-    takeWhile(predicate: Predicate<T>): Ext<T> {
+    takeWhile(predicate: Predicate<T>): From<T> {
         let that = this;
-        return new Ext({
+        return new From({
             [Symbol.iterator]: function* () {
                 let index = 0;
                 for (let item of that) {
@@ -676,9 +676,9 @@ class Ext<T> implements Iterable<T>{
      * @param second 它的非重复元素构成联合的第二个集
      * @param comparer 用于对值进行比较的函数
      */
-    union(second: Iterable<T>, comparer: Comparer<T> = defaultComparer): Ext<T> {
+    union(second: Iterable<T>, comparer: Comparer<T> = defaultComparer): From<T> {
         let that = this;
-        return new Ext({
+        return new From({
             [Symbol.iterator]: function* () {
                 for (let item of that) {
                     yield item;
@@ -695,9 +695,9 @@ class Ext<T> implements Iterable<T>{
      * 基于谓词筛选值序列
      * @param predicate 用于测试每个元素是否满足条件的函数
      */
-    where(predicate: Predicate<T>): Ext<T> {
+    where(predicate: Predicate<T>): From<T> {
         let that = this;
-        return new Ext({
+        return new From({
             [Symbol.iterator]: function* () {
                 let index = 0;
                 for (let item of that) {
@@ -713,9 +713,9 @@ class Ext<T> implements Iterable<T>{
     /**
      * 
      */
-    zip<S, R>(second: Iterable<S>, resultSelector: (a: T, b: S) => R): Ext<R> {
+    zip<S, R>(second: Iterable<S>, resultSelector: (a: T, b: S) => R): From<R> {
         let that = this;
-        return new Ext({
+        return new From({
             [Symbol.iterator]: function* () {
                 let it1 = that[Symbol.iterator]();
                 let it2 = second[Symbol.iterator]();
@@ -737,9 +737,9 @@ class Ext<T> implements Iterable<T>{
      * 在序列之后添加新元素
      * @param item 新元素
      */
-    append(item: T): Ext<T> {
+    append(item: T): From<T> {
         let that = this;
-        return new Ext({
+        return new From({
             [Symbol.iterator]: function* () {
                 for (let thatItem of that) {
                     yield thatItem;
@@ -753,9 +753,9 @@ class Ext<T> implements Iterable<T>{
      * 在序列最前添加新元素
      * @param item 新元素
      */
-    prepend(item: T): Ext<T> {
+    prepend(item: T): From<T> {
         let that = this;
-        return new Ext({
+        return new From({
             [Symbol.iterator]: function* () {
                 yield item;
                 for (let thatItem of that) {
@@ -770,8 +770,8 @@ class Ext<T> implements Iterable<T>{
      * @param start 序列开始的元素
      * @param count 序列的元素个数 
      */
-    static range(start: number, count: number): Ext<number> {
-        return new Ext({
+    static range(start: number, count: number): From<number> {
+        return new From({
             [Symbol.iterator]: function* () {
                 while (count--) {
                     yield start++;
@@ -785,8 +785,8 @@ class Ext<T> implements Iterable<T>{
      * @param item 重复的元素
      * @param count 重复的次数
      */
-    static repeat<T>(item: T, count: number): Ext<T> {
-        return new Ext({
+    static repeat<T>(item: T, count: number): From<T> {
+        return new From({
             [Symbol.iterator]: function* () {
                 while (count--) {
                     yield item;
@@ -796,9 +796,9 @@ class Ext<T> implements Iterable<T>{
     }
 
     /**
-     * 返回一个空Ext<T>具有指定的类型参数
+     * 返回一个空From<T>具有指定的类型参数
      */
-    static empty<T>(): Ext<T> {
-        return new Ext([]);
+    static empty<T>(): From<T> {
+        return new From([]);
     }
 }
