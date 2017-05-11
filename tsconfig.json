@@ -8,13 +8,17 @@
         "importHelpers": true,
         "outDir": "dist",
         "baseUrl": "src",
+        "downlevelIteration": true,
         "lib": [
             "dom",
             "es5",
-            "es2015.promise"
+            "es2015.promise",
+            "es2015.iterable"
         ],
         "paths": {
-            "tslib": ["../node_modules/tslib/tslib"]
+            "tslib": [
+                "../node_modules/tslib/tslib"
+            ]
         }
     }
 }

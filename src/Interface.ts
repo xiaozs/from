@@ -19,56 +19,9 @@ export interface MapObject<T> {
     [key: string]: T;
 }
 
-/**
- * 可枚举对象
- */
-export interface Iterable<T> {
-    /**
-     * 生成枚举器
-     */
-    getIterator(): Iterator<T>
+export interface AggregateFunc<S, T> {
+    (prev: S, current: T): S;
 }
-
-/**
- * 枚举器
- */
-export interface Iterator<T> {
-    /**
-     * 获得枚举结果
-     */
-    next(): IterationResult<T>;
-}
-
-/**
- * 枚举结果
- */
-export type IterationResult<T> = DoneIterationResult<T> | NotDoneIterationResult<T>;
-
-/**
- * 已完成枚举结果
- */
-export interface DoneIterationResult<T> {
-    /**
-     * 枚举是否已经结束
-     */
-    done: true;
-}
-
-/**
- * 未完成枚举结果
- */
-export interface NotDoneIterationResult<T> {
-    /**
-     * 当前枚举的值
-     */
-    value: T;
-    /**
-     * 枚举是否已经结束
-     */
-    done: false;
-}
-
-
 export interface Predicate<T> {
     (item: T, index: number): boolean;
 }

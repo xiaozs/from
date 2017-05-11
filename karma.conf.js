@@ -15,7 +15,7 @@ module.exports = function (config) {
         typescriptPreprocessor: {
             options: tsconfig.compilerOptions
         },
-        browsers: ["Chrome", "IE7"],
+        browsers: ["Chrome"],
         customLaunchers: {
             IE7: {
                 base: 'IE',
