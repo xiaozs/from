@@ -1,7 +1,5 @@
 import * as Type from "Type";
 import * as Error from "Error";
-import { ArrayIterator } from "Utils";
-import { Iterable, Iterator, IterationResult } from "Interface";
 
 /**
  * 数组加强类
@@ -381,7 +379,9 @@ export default class List<T> implements Iterable<T>{
     /**
      * 生成枚举器
      */
-    getIterator(): Iterator<T> {
-        return new ArrayIterator(this.innerArray_);
+    *[Symbol.iterator](){
+        for(let item of this.innerArray_){
+            yield item;
+        }
     }
 }

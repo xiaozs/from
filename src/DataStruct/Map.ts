@@ -1,7 +1,5 @@
 import * as Type from "Type";
-import { ArrayIterator } from "Utils";
 import { KeyValuePair, MapObject } from "Interface";
-import { Iterable, Iterator, IterationResult } from "Interface";
 
 /**
  * 保存键值对的Map对象
@@ -153,9 +151,11 @@ export default class Map<T> implements Iterable<KeyValuePair<T>>{
     }
 
     /**
-     * 生成枚举器
+     * 生成枚举器this.keyValuePairArray_
      */
-    getIterator(): Iterator<KeyValuePair<T>> {
-        return new ArrayIterator(this.keyValuePairArray_);
+    *[Symbol.iterator](){
+        for(let item of this.keyValuePairArray_){
+            yield item;
+        }
     }
 }
