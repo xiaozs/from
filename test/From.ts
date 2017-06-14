@@ -1,12 +1,66 @@
-import From from "From";
+import from from "From";
 
-QUnit.test("test", assert => {
-    let arr = [1, 2, 3];
-    let first = new From(arr).first();
-    assert.ok(arr[0] === first);
+QUnit.test("aggregate 只有1个参数时", assert => {
+    let arr = [4, 5, 6, 7];
+    let result = from(arr).aggregate((res, current) => {
+        return res + current;
+    });
+    assert.ok(result === 22);
+
+
+    let oneArr = [1];
+    let result2 = from(oneArr).aggregate((res, current) => {
+        return res + current;
+    });
+    assert.ok(result2 === 1);
+
+
+    let emptyArr: number[] = [];
+    assert.throws(function () {
+        from(emptyArr).aggregate((res, current) => {
+            return res + current;
+        })
+    })
 })
-QUnit.test("test", assert => {
-    let arr = [1, 2, 3];
-    let first = new From(arr).first(item => item >= 2);
-    assert.ok(arr[1] === first);
+QUnit.test("aggregate 有2个参数时", assert => {
+    let arr = [4, 5, 6, 7];
+    let result = from(arr).aggregate(10, (res, current) => {
+        return res + current;
+    });
+    assert.ok(result === 32);
+
+
+    let oneArr = [1];
+    let result2 = from(oneArr).aggregate(10, (res, current) => {
+        return res + current;
+    });
+    assert.ok(result2 === 11);
+
+
+    let emptyArr: number[] = [];
+    let result3 = from(emptyArr).aggregate(10, (res, current) => {
+        return res + current;
+    });
+    assert.ok(result3 === 10);
+})
+QUnit.test("aggregate 有3个参数时", assert => {
+    let arr = [4, 5, 6, 7];
+    let result = from(arr).aggregate(10, (res, current) => {
+        return res + current;
+    }, res => res.toString());
+    assert.ok(result === "32");
+
+
+    let oneArr = [1];
+    let result2 = from(oneArr).aggregate(10, (res, current) => {
+        return res + current;
+    }, res => res.toString());
+    assert.ok(result2 === "11");
+
+
+    let emptyArr: number[] = [];
+    let result3 = from(emptyArr).aggregate(10, (res, current) => {
+        return res + current;
+    }, res => res.toString());
+    assert.ok(result3 === "10");
 })
