@@ -86,3 +86,29 @@ QUnit.test("all 有1个参数时", assert => {
     let result3 = from(arr3).all(item => item >= 0);
     assert.ok(result3 === false);
 })
+QUnit.test("any 有0个参数时", assert => {
+    let arr = [1, 2, 3];
+    let result = from(arr).any();
+    assert.ok(result === true);
+
+    let emptyArr: number[] = [];
+    let result2 = from(emptyArr).any();
+    assert.ok(result2 === false);
+})
+QUnit.test("any 有1个参数时", assert => {
+    let arr = [1, 2, 3];
+    let result = from(arr).any(item => item >= 0);
+    assert.ok(result === true);
+
+    let emptyArr: number[] = [];
+    let result2 = from(emptyArr).any(item => item >= 0);
+    assert.ok(result2 === false);
+
+    let arr3: number[] = [-1, -2];
+    let result3 = from(arr3).any(item => item >= 0);
+    assert.ok(result3 === false);
+
+    let arr4: number[] = [-1, -2];
+    let result4 = from(arr3).any(item => item <= 0);
+    assert.ok(result4 === true);
+})
