@@ -16,7 +16,7 @@ QUnit.test("aggregate 只有1个参数时", assert => {
 
 
     let emptyArr: number[] = [];
-    assert.throws(function () {
+    assert.throws(() => {
         from(emptyArr).aggregate((res, current) => {
             return res + current;
         })
@@ -111,4 +111,19 @@ QUnit.test("any 有1个参数时", assert => {
     let arr4: number[] = [-1, -2];
     let result4 = from(arr3).any(item => item <= 0);
     assert.ok(result4 === true);
+})
+QUnit.test("average 有0个参数时", assert => {
+    let arr = [2, 4, 6, 8];
+    let result = from(arr).average();
+    assert.ok(result === 5);
+
+    let strArr = ["2", "4", "6", "8"];
+    assert.throws(() => {
+        from(strArr).average();
+    })
+})
+QUnit.test("average 有1个参数时", assert => {
+    let arr = ["2", "4", "6", "8"];
+    let result = from(arr).average(item => parseFloat(item));
+    assert.ok(result === 5);
 })
