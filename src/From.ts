@@ -17,7 +17,7 @@ function defaultComparer<T>(a: T, b: T) {
     return a === b;
 }
 
-export default class From<T> implements Iterable<T>{
+export class From<T> implements Iterable<T>{
     constructor(private iterable: Iterable<T>) { }
     [Symbol.iterator]() {
         return this.iterable[Symbol.iterator]();
@@ -254,7 +254,7 @@ export default class From<T> implements Iterable<T>{
         let that = this;
         return new From({
             [Symbol.iterator]: function* () {
-                var secExt = new From(second);
+                let secExt = new From(second);
                 for (let item of that) {
                     let flag = secExt.contains(item, comparer);
                     if (!flag) yield item;
@@ -801,4 +801,12 @@ export default class From<T> implements Iterable<T>{
     static empty<T>(): From<T> {
         return new From([]);
     }
+}
+
+/**
+ * 生成From对象
+ * @param it 可遍历对象
+ */
+export default function from<T>(it: Iterable<T>) {
+    return new From(it);
 }
