@@ -64,3 +64,25 @@ QUnit.test("aggregate 有3个参数时", assert => {
     }, res => res.toString());
     assert.ok(result3 === "10");
 })
+QUnit.test("all 有0个参数时", assert => {
+    let arr = [1, 2, 3];
+    let result = from(arr).all();
+    assert.ok(result === true);
+
+    let emptyArr: number[] = [];
+    let result2 = from(emptyArr).all();
+    assert.ok(result2 === true);
+})
+QUnit.test("all 有1个参数时", assert => {
+    let arr = [1, 2, 3];
+    let result = from(arr).all(item => item >= 0);
+    assert.ok(result === true);
+
+    let emptyArr: number[] = [];
+    let result2 = from(emptyArr).all(item => item >= 0);
+    assert.ok(result2 === true);
+
+    let arr3: number[] = [-1, -2];
+    let result3 = from(arr3).all(item => item >= 0);
+    assert.ok(result3 === false);
+})
