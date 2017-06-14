@@ -18,7 +18,15 @@ function defaultComparer<T>(a: T, b: T) {
 }
 
 export class From<T> implements Iterable<T>{
+    /**
+     * 构造函数
+     * @param iterable 可迭代对象
+     */
     constructor(private iterable: Iterable<T>) { }
+
+    /**
+     * From的迭代器
+     */
     [Symbol.iterator]() {
         return this.iterable[Symbol.iterator]();
     }
