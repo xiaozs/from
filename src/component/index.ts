@@ -1,41 +1,20 @@
-
+import { encode } from "Utils";
 abstract class BaseNode {
-    private _dom?: Node;
+    private _dom: Node | null = null;
     get dom() {
         return this._dom;
     }
-
+    private _parent: NormalNode | null = null;
+    get parent() {
+        return this._parent;
+    }
     protected abstract $createDom(): Node;
-    abstract toString(): string;
     abstract toHtml(): string;
 }
-abstract class NormalNode extends BaseNode {
-    tagName: string;
-    abstract toString(): string;
-    abstract toHtml(): string;
-}
-abstract class SelfCloseNode extends NormalNode {
-    abstract toString(): string;
-    abstract toHtml(): string;
-}
-
-function encode(str: string) {
-    return str.replace(/</g, "&lt;").replace(/>/g, "&gt;")
-}
-
-class TextNode extends BaseNode/* implements String */ {
+class TextNode extends BaseNode {
     constructor(content: string = "") {
         super();
         this._content = content;
-        return new Proxy(this, {
-            get: function (target, key) {
-                if (key in this) {
-                    return this[key];
-                } else {
-                    return this.content[key];
-                }
-            }
-        })
     }
     private _content: string;
     get content() {
@@ -56,41 +35,71 @@ class TextNode extends BaseNode/* implements String */ {
     toHtml() {
         return encode(this._content);
     }
-
-
-
-    *[Symbol.iterator]() {
-        for (let key in []) {
-            yield "";
-        }
+}
+abstract class TagNode extends BaseNode {
+    readonly tagName: string;
+    constructor(tagName: string) {
+        super();
+        this.tagName = tagName;
     }
-    charAt(pos: number): string { return "" }
-    charCodeAt(index: number): number { return 0 }
-    concat(...strings: string[]): string { return "" }
-    indexOf(searchString: string, position?: number): number { return 0 }
-    lastIndexOf(searchString: string, position?: number): number { return 0 }
-    localeCompare(that: string): number { return 0 }
-    match(regexp: string | RegExp): RegExpMatchArray | null { return null }
-    replace(searchValue: string | RegExp, replaceValue: string): string;
-    replace(searchValue: string | RegExp, replacer: (substring: string, ...args: any[]) => string): string;
-    replace() { return "" }
-    search(regexp: string | RegExp): number { return 0 }
-    slice(start?: number, end?: number): string { return "" }
-    split(separator: string | RegExp, limit?: number): string[] { return [""] }
-    substring(start: number, end?: number): string { return "" }
-    toLowerCase(): string { return "" }
-    toLocaleLowerCase(): string { return "" }
-    toUpperCase(): string { return "" }
-    toLocaleUpperCase(): string { return "" }
-    trim(): string { return "" }
-    substr(from: number, length?: number): string { return "" }
-    valueOf(): string { return "" }
-
-    readonly [index: number]: string;
-    get length() {
-        return this._content.length;
+    protected $createDom(): Node {
+        return document.createElement(this.tagName);
+    }
+    private _children: Children;
+    get children() {
+        return this._children;
     }
 }
+class SelfCloseNode extends TagNode {
+    toHtml(): string {
+        return `<${this.tagName} />`
+    }
+}
+class NormalNode extends TagNode {
+    toHtml(): string {
+        let tagName = this.tagName;
+        return `<${tagName}>${this.children.toHtml()}</${tagName}>`
+    }
+}
+
+class Children {
+    toHtml(): string {
+        return "";
+    }
+}
+
+function nodeFactory(tagName: string) {
+    switch (tagName) {
+        case "area":
+        case "br":
+        case "col":
+        case "embed":
+        case "hr":
+        case "img":
+        case "input":
+        case "link":
+        case "meta":
+        case "param":
+
+        case "base":
+        case "basefont":
+        case "frame":
+        case "keygen":
+        case "source":
+            return new SelfCloseNode(tagName);
+        default:
+            return new NormalNode(tagName);
+    }
+}
+
+
+
+
+
+
+
+
+
 
 abstract class Component {
     append() {

@@ -379,8 +379,8 @@ export default class List<T> implements Iterable<T>{
     /**
      * 生成枚举器
      */
-    *[Symbol.iterator](){
-        for(let item of this.innerArray_){
+    *[Symbol.iterator]() {
+        for (let item of this.innerArray_) {
             yield item;
         }
     }
