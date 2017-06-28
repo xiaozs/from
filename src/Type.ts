@@ -24,7 +24,7 @@ function isType(type: string): (obj: any) => boolean {
  * @param obj 需要被判断的对象
  */
 export function isArray<T>(obj: any): obj is Array<T> {
-    return obj instanceof Boolean || isTypeArray(obj);
+    return obj instanceof Array || isTypeArray(obj);
 }
 
 /**
