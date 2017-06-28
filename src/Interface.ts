@@ -18,7 +18,6 @@ export interface KeyValuePair<T> {
 export interface MapObject<T> {
     [key: string]: T;
 }
-
 export interface AggregateFunc<S, T> {
     (prev: S, current: T): S;
 }
@@ -36,5 +35,5 @@ export interface Selector<I, O> {
  * 构造函数接口
  */
 export interface IConstructor<T> {
-    new (): T;
+    new (...args: any[]): T;
 }
