@@ -240,11 +240,17 @@ export class From<T> implements Iterable<T>{
     }
 
     /**
+     * 返回序列中指定索引处的元素；如果索引超出范围，则返回undefined。
+     * @param index 要检索的从零开始的元素索引
+     */
+    elementAt(index: number): T | undefined;
+    /**
      * 返回序列中指定索引处的元素；如果索引超出范围，则返回默认值。
      * @param index 要检索的从零开始的元素索引
      * @param defaultValue 默认值
      */
-    elementAt(index: number, defaultValue?: T): T {
+    elementAt(index: number, defaultValue: T): T;
+    elementAt(index: number, defaultValue?: T): T | undefined {
         let filterFn = (_: T, i: number) => {
             return index === i;
         };
@@ -256,7 +262,9 @@ export class From<T> implements Iterable<T>{
     }
 
     /**
-     * 
+     * 返回两个序列的差集
+     * @param second 需要去除的元素的集合
+     * @param comparer 用于比较值的函数
      */
     except(second: Iterable<T>, comparer: Comparer<T> = defaultComparer): From<T> {
         let that = this;
@@ -512,7 +520,7 @@ export class From<T> implements Iterable<T>{
      * @param second 用于与当前序列进行比较
      * @param comparer 一个用于比较元素的函数
      */
-    SequenceEqual(second: Iterable<T>, comparer: Comparer<T> = defaultComparer): boolean {
+    sequenceEqual(second: Iterable<T>, comparer: Comparer<T> = defaultComparer): boolean {
         let it1 = this[Symbol.iterator]();
         let it2 = second[Symbol.iterator]();
         let itResult1: IteratorResult<T>;
@@ -536,10 +544,20 @@ export class From<T> implements Iterable<T>{
     }
 
     /**
-     * 返回序列中满足指定条件的唯一元素；如果这类元素不存在，则返回默认值；如果有多个元素满足该条件，此方法将引发异常。
+     * 返回序列中的唯一元素；如果不存在元素或如果有多个元素，此方法将引发异常。
+     */
+    single(): T;
+    /**
+     * 返回序列中满足指定条件的唯一元素；如果这类元素不存在或如果有多个元素满足该条件，此方法将引发异常。
+     * @param predicate 用于测试元素是否满足条件的函数
+     */
+    single(predicate: Predicate<T>): T;
+    /**
+     * 返回序列中满足指定条件的唯一元素；如果这类元素不存在或果有多个元素满足该条件，此方法将返回默认值。
      * @param predicate 用于测试元素是否满足条件的函数
      * @param defaultValue 默认值
      */
+    single(predicate: Predicate<T>, defaultValue: T): T;
     single(predicate: Predicate<T> = defaultPredicate, defaultValue?: T): T {
         let count = 0;
         let result: T = <any>null;
@@ -590,6 +608,7 @@ export class From<T> implements Iterable<T>{
                 for (let item of iterable) {
                     let flag = predicate(item, index++);
                     if (!flag) {
+                        yield item;
                         break;
                     }
                 }
@@ -621,10 +640,6 @@ export class From<T> implements Iterable<T>{
                     throw new Error();
                 }
             })
-        }
-
-        if (count === 0) {
-            throw new Error();
         }
         return total;
     }
@@ -719,7 +734,9 @@ export class From<T> implements Iterable<T>{
     }
 
     /**
-     * 
+     * 对两个序列的元素进行操作返回一个新的序列，抛弃多余的元素
+     * @param second 第二个序列
+     * @param resultSelector 对两个序列的元素进行操作的函数
      */
     zip<S, R>(second: Iterable<S>, resultSelector: (a: T, b: S) => R): From<R> {
         let that = this;
@@ -752,7 +769,7 @@ export class From<T> implements Iterable<T>{
                 for (let thatItem of that) {
                     yield thatItem;
                 }
-                return item;
+                yield item;
             }
         });
     }
