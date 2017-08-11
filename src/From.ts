@@ -790,6 +790,26 @@ export class From<T> implements Iterable<T>{
         });
     }
 
+    orderBy() { }
+    orderByDescending() { }
+    thenBy() { }
+    thenByDescending() { }
+    reverse() {
+
+    }
+    join() {
+
+    }
+    groupJoin() {
+
+    }
+    group() {
+
+    }
+    groupBy() {
+
+    }
+
     /**
      * 生成指定范围内的整数序列
      * @param start 序列开始的元素
