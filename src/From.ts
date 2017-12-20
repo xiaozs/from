@@ -3,7 +3,7 @@ import List from "DataStruct/List";
 import Map from "DataStruct/Map";
 import { IConstructor } from "Interface";
 import { MapObject, KeyValuePair } from "Interface";
-import { AggregateFunc, Predicate, EqualityComparer, Selector, ValueComparer } from "Interface";
+import { AggregateFunc, Predicate, EqualityComparer, Selector, MergeSelector, ValueComparer } from "Interface";
 /**
  * 用作部分Predicate参数的默认值
  */
@@ -823,8 +823,28 @@ export class From<T> implements Iterable<T>{
             }
         });
     }
-    join() {
-
+    join<TInner, TKey, TResult>(
+        inner: Iterable<TInner>,
+        outerKeySelector: Selector<T, TKey>,
+        innerKeySelector: Selector<TInner, TKey>,
+        resultSelector: MergeSelector<T, TInner, TResult>,
+        comparer: EqualityComparer<TKey> = defaultEqualityComparer
+    ): From<TResult> {
+        let that = this;
+        return new From({
+            *[Symbol.iterator]() {
+                for (let outerIt of that) {
+                    for (let innerIt of inner) {
+                        let outerKey = outerKeySelector(outerIt);
+                        let innerKey = innerKeySelector(innerIt);
+                        let flag = comparer(outerKey, innerKey);
+                        if (flag) {
+                            yield resultSelector(outerIt, innerIt);
+                        }
+                    }
+                }
+            }
+        })
     }
     groupJoin() {
 
@@ -921,7 +941,7 @@ class OrderedFrom<T> extends From<T> {
             for (let sortMsg of this.sortMessageCache) {
                 let keyA = sortMsg.keySelector(a);
                 let keyB = sortMsg.keySelector(b);
-                var comparer = sortMsg.valueComparer as ValueComparer<any>;
+                let comparer = sortMsg.valueComparer as ValueComparer<any>;
                 let result: number;
                 if (sortMsg.sortOrder === SortOrder.ascending) {
                     result = comparer(keyA, keyB);

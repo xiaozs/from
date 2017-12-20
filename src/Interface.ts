@@ -36,6 +36,10 @@ export interface Selector<I, O> {
     (item: I): O;
 }
 
+export interface MergeSelector<I1, I2, O> {
+    (item1: I1, item2: I2): O;
+}
+
 /**
  * 构造函数接口
  */

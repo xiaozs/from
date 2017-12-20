@@ -702,6 +702,158 @@ QUnit.test("reverse", assert => {
     let newArr = from(arr).reverse().toArray();
     assert.deepEqual(newArr, [4, 3, 2, 1]);
 })
+QUnit.test("join outer项数相同时", assert => {
+    let outer = [
+        { id: 1, name: "name1" },
+        { id: 2, name: "name2" },
+        { id: 3, name: "name3" }
+    ];
+    let inner = [
+        { id: 1, age: 1 },
+        { id: 2, age: 2 },
+        { id: 3, age: 3 }
+    ];
+
+    let newArr = from(outer).join(
+        inner,
+        outerIt => outerIt.id,
+        innerIt => innerIt.id,
+        (outerIt, innerIt) => {
+            return {
+                name: outerIt.name,
+                age: innerIt.age
+            }
+        }
+    ).toArray();
+    assert.deepEqual(newArr, [
+        { name: "name1", age: 1 },
+        { name: "name2", age: 2 },
+        { name: "name3", age: 3 }
+    ]);
+})
+QUnit.test("join outer项数较多时", assert => {
+    let outer = [
+        { id: 1, name: "name1" },
+        { id: 2, name: "name2" },
+        { id: 3, name: "name3" },
+        { id: 4, name: "name4" }
+    ];
+    let inner = [
+        { id: 1, age: 1 },
+        { id: 2, age: 2 },
+        { id: 3, age: 3 }
+    ];
+
+    let newArr = from(outer).join(
+        inner,
+        outerIt => outerIt.id,
+        innerIt => innerIt.id,
+        (outerIt, innerIt) => {
+            return {
+                name: outerIt.name,
+                age: innerIt.age
+            }
+        }
+    ).toArray();
+    assert.deepEqual(newArr, [
+        { name: "name1", age: 1 },
+        { name: "name2", age: 2 },
+        { name: "name3", age: 3 }
+    ]);
+})
+QUnit.test("join inner项数较多时", assert => {
+    let outer = [
+        { id: 1, name: "name1" },
+        { id: 2, name: "name2" },
+        { id: 3, name: "name3" }
+    ];
+    let inner = [
+        { id: 1, age: 1 },
+        { id: 2, age: 2 },
+        { id: 3, age: 3 },
+        { id: 4, age: 4 }
+    ];
+
+    let newArr = from(outer).join(
+        inner,
+        outerIt => outerIt.id,
+        innerIt => innerIt.id,
+        (outerIt, innerIt) => {
+            return {
+                name: outerIt.name,
+                age: innerIt.age
+            }
+        }
+    ).toArray();
+    assert.deepEqual(newArr, [
+        { name: "name1", age: 1 },
+        { name: "name2", age: 2 },
+        { name: "name3", age: 3 }
+    ]);
+})
+QUnit.test("join 乱序时", assert => {
+    let outer = [
+        { id: 3, name: "name3" },
+        { id: 1, name: "name1" },
+        { id: 2, name: "name2" },
+    ];
+    let inner = [
+        { id: 1, age: 1 },
+        { id: 2, age: 2 },
+        { id: 3, age: 3 },
+        { id: 4, age: 4 }
+    ];
+
+    let newArr = from(outer).join(
+        inner,
+        outerIt => outerIt.id,
+        innerIt => innerIt.id,
+        (outerIt, innerIt) => {
+            return {
+                name: outerIt.name,
+                age: innerIt.age
+            }
+        }
+    ).orderBy(it => it.age).toArray();
+    assert.deepEqual(newArr, [
+        { name: "name1", age: 1 },
+        { name: "name2", age: 2 },
+        { name: "name3", age: 3 }
+    ]);
+})
+QUnit.test("join 使用comparer", assert => {
+    let outer = [
+        { idObj: { hash: "3" }, name: "name3" },
+        { idObj: { hash: "1" }, name: "name1" },
+        { idObj: { hash: "2" }, name: "name2" },
+    ];
+    let inner = [
+        { idObj: { hash: "1" }, age: 1 },
+        { idObj: { hash: "2" }, age: 2 },
+        { idObj: { hash: "3" }, age: 3 },
+        { idObj: { hash: "4" }, age: 4 },
+    ];
+
+    let newArr = from(outer).join(
+        inner,
+        outerIt => outerIt.idObj,
+        innerIt => innerIt.idObj,
+        (outerIt, innerIt) => {
+            return {
+                name: outerIt.name,
+                age: innerIt.age
+            }
+        },
+        (outerKey, innerKey) => {
+            return outerKey.hash === innerKey.hash
+        }
+    ).orderBy(it => it.age).toArray();
+    assert.deepEqual(newArr, [
+        { name: "name1", age: 1 },
+        { name: "name2", age: 2 },
+        { name: "name3", age: 3 }
+    ]);
+})
 
 
 
