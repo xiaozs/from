@@ -645,6 +645,58 @@ QUnit.test("prepend", assert => {
     let newArr = from(arr).prepend(1).toArray();
     assert.deepEqual(newArr, [1, 2, 3]);
 })
+QUnit.test("orderBy 对数字进行排序时", assert => {
+    let arr = [2, 1, 3];
+    let newArr = from(arr).orderBy(it => it).toArray();
+    assert.deepEqual(newArr, [1, 2, 3]);
+})
+QUnit.test("orderBy 对字符串进行排序时", assert => {
+    let arr = ["b", "a", "c"];
+    let newArr = from(arr).orderBy(it => it).toArray();
+    assert.deepEqual(newArr, ["a", "b", "c"]);
+})
+QUnit.test("orderByDescending 对数字进行排序时", assert => {
+    let arr = [2, 1, 3];
+    let newArr = from(arr).orderByDescending(it => it).toArray();
+    assert.deepEqual(newArr, [3, 2, 1]);
+})
+QUnit.test("orderByDescending 对字符串进行排序时", assert => {
+    let arr = ["b", "a", "c"];
+    let newArr = from(arr).orderByDescending(it => it).toArray();
+    assert.deepEqual(newArr, ["c", "b", "a"]);
+})
+QUnit.test("orderBy 对特定对象进行排序时", assert => {
+    let arr = [{ value: 2 }, { value: 1 }, { value: 3 }];
+    let newArr = from(arr).orderBy(it => it.value).toArray();
+    assert.deepEqual(newArr, [{ value: 1 }, { value: 2 }, { value: 3 }]);
+})
+QUnit.test("orderByDescending 对特定对象进行排序时", assert => {
+    let arr = [{ value: 2 }, { value: 1 }, { value: 3 }];
+    let newArr = from(arr).orderByDescending(it => it.value).toArray();
+    assert.deepEqual(newArr, [{ value: 3 }, { value: 2 }, { value: 1 }]);
+})
+QUnit.test("thenBy 对特定对象进行排序时", assert => {
+    let arr = [{ value1: 2, value2: 2 }, { value1: 2, value2: 3 }, { value1: 2, value2: 1 }, { value1: 1, value2: 1 }, { value1: 3, value2: 1 }];
+    let newArr = from(arr).orderBy(it => it.value1).thenBy(it => it.value2).toArray();
+    assert.deepEqual(newArr, [
+        { value1: 1, value2: 1 },
+        { value1: 2, value2: 1 },
+        { value1: 2, value2: 2 },
+        { value1: 2, value2: 3 },
+        { value1: 3, value2: 1 }
+    ]);
+})
+QUnit.test("thenByDescending 对特定对象进行排序时", assert => {
+    let arr = [{ value1: 2, value2: 2 }, { value1: 2, value2: 3 }, { value1: 2, value2: 1 }, { value1: 1, value2: 1 }, { value1: 3, value2: 1 }];
+    let newArr = from(arr).orderBy(it => it.value1).thenByDescending(it => it.value2).toArray();
+    assert.deepEqual(newArr, [
+        { value1: 1, value2: 1 },
+        { value1: 2, value2: 3 },
+        { value1: 2, value2: 2 },
+        { value1: 2, value2: 1 },
+        { value1: 3, value2: 1 }
+    ]);
+})
 
 
 

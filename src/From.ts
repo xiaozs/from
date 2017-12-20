@@ -801,9 +801,14 @@ export class From<T> implements Iterable<T>{
     orderBy(keySelector: Selector<T, String>): OrderedFrom<T>;
     orderBy(keySelector: Selector<T, any>, valueComparer: ValueComparer<T>): OrderedFrom<T>;
     orderBy(keySelector: Selector<T, any>, valueComparer?: ValueComparer<T>): OrderedFrom<T> {
-        return new OrderedFrom(this, keySelector, valueComparer);
+        return new OrderedFrom(this, keySelector, SortOrder.ascending, valueComparer);
     }
-    orderByDescending() { }
+    orderByDescending(keySelector: Selector<T, number>): OrderedFrom<T>;
+    orderByDescending(keySelector: Selector<T, String>): OrderedFrom<T>;
+    orderByDescending(keySelector: Selector<T, any>, valueComparer: ValueComparer<T>): OrderedFrom<T>;
+    orderByDescending(keySelector: Selector<T, any>, valueComparer?: ValueComparer<T>): OrderedFrom<T> {
+        return new OrderedFrom(this, keySelector, SortOrder.descending, valueComparer);
+    }
     reverse() {
 
     }
@@ -858,14 +863,34 @@ export class From<T> implements Iterable<T>{
     }
 }
 
+interface SortMessageCache<T> {
+    keySelector: Selector<T, any>;
+    valueComparer?: ValueComparer<T>;
+    sortOrder: SortOrder;
+
+}
+
+enum SortOrder {
+    ascending,
+    descending
+}
+
 class OrderedFrom<T> extends From<T> {
     constructor(
         iterable: Iterable<T>,
-        private keySelector: Selector<T, any>,
-        private valueComparer?: ValueComparer<T>
+        keySelector: Selector<T, any>,
+        sortOrder: SortOrder,
+        valueComparer?: ValueComparer<T>
     ) {
         super(iterable);
+        this.sortMessageCache.push({
+            keySelector,
+            sortOrder,
+            valueComparer
+        });
     }
+
+    private sortMessageCache: SortMessageCache<T>[] = [];
     *[Symbol.iterator]() {
         let itemArray = this.getInnerArray();
         for (let item of itemArray) {
@@ -878,24 +903,60 @@ class OrderedFrom<T> extends From<T> {
             itemArray.push(it);
         }
         if (itemArray.length > 0) {
-            let comparer = this.valueComparer as ValueComparer<any>;
-            let first = itemArray[0];
-            let key = this.keySelector(first);
-            if (Type.isString(key)) {
-                comparer = defaultValueComparerForString;
-            } else if (Type.isNumber(key)) {
-                comparer = defaultValueComparerForNumber;
-            }
-            itemArray.sort((a, b) => {
-                let keyA = this.keySelector(a);
-                let keyB = this.keySelector(b);
-                return comparer(keyA, keyB);
-            });
+            let firstIt = itemArray[0];
+            this.setComparer(firstIt);
         }
+        itemArray.sort((a, b) => {
+            for (let sortMsg of this.sortMessageCache) {
+                let keyA = sortMsg.keySelector(a);
+                let keyB = sortMsg.keySelector(b);
+                var comparer = sortMsg.valueComparer as ValueComparer<any>;
+                let result: number;
+                if (sortMsg.sortOrder === SortOrder.ascending) {
+                    result = comparer(keyA, keyB);
+                } else {
+                    result = comparer(keyB, keyA);
+                }
+                if (result !== 0) {
+                    return result;
+                }
+            }
+            return 0;
+        });
         return itemArray;
     }
-    thenBy() { }
-    thenByDescending() { }
+    private setComparer(firstIt: T) {
+        for (let sortMsg of this.sortMessageCache) {
+            let key = sortMsg.keySelector(firstIt);
+            sortMsg.valueComparer = sortMsg.valueComparer || this.getDefaultComparer(key);
+        }
+    }
+    private getDefaultComparer(key: any): ValueComparer<any> {
+        if (Type.isString(key)) {
+            return defaultValueComparerForString;
+        } else if (Type.isNumber(key)) {
+            return defaultValueComparerForNumber;
+        } else {
+            throw new Error();
+        }
+    }
+    thenBy(keySelector: Selector<T, number>): OrderedFrom<T>;
+    thenBy(keySelector: Selector<T, String>): OrderedFrom<T>;
+    thenBy(keySelector: Selector<T, any>, valueComparer: ValueComparer<T>): OrderedFrom<T>;
+    thenBy(keySelector: Selector<T, any>, valueComparer?: ValueComparer<T>): OrderedFrom<T> {
+        let newObj = new OrderedFrom(this.iterable, keySelector, SortOrder.ascending, valueComparer);
+        newObj.sortMessageCache = this.sortMessageCache.concat(newObj.sortMessageCache);
+        return newObj;
+    }
+
+    thenByDescending(keySelector: Selector<T, number>): OrderedFrom<T>;
+    thenByDescending(keySelector: Selector<T, String>): OrderedFrom<T>;
+    thenByDescending(keySelector: Selector<T, any>, valueComparer: ValueComparer<T>): OrderedFrom<T>;
+    thenByDescending(keySelector: Selector<T, any>, valueComparer?: ValueComparer<T>): OrderedFrom<T> {
+        let newObj = new OrderedFrom(this.iterable, keySelector, SortOrder.descending, valueComparer);
+        newObj.sortMessageCache = this.sortMessageCache.concat(newObj.sortMessageCache);
+        return newObj;
+    }
 }
 
 /**
