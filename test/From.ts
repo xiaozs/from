@@ -854,6 +854,81 @@ QUnit.test("join 使用comparer", assert => {
         { name: "name3", age: 3 }
     ]);
 })
+QUnit.test("groupJoin 不使用comparer", assert => {
+    let outer = [
+        { id: 1, name: "name1" },
+        { id: 2, name: "name2" },
+        { id: 3, name: "name3" },
+    ];
+    let inner = [
+        { id: 1, item: "1" },
+        { id: 2, item: "2" },
+        { id: 3, item: "3" },
+        { id: 1, item: "4" }
+    ];
+
+    let newArr = from(outer).groupJoin(
+        inner,
+        outerIt => outerIt.id,
+        innerIt => innerIt.id,
+        (outerIt, innerItGroup) => {
+            return {
+                id: outerIt.id,
+                name: outerIt.name,
+                items: innerItGroup
+            }
+        }
+    ).toArray();
+    assert.deepEqual(newArr, [
+        {
+            id: 1, name: "name1", items: [
+                { id: 1, item: "1" },
+                { id: 1, item: "4" }
+            ]
+        },
+        { id: 2, name: "name2", items: [{ id: 2, item: "2" }] },
+        { id: 3, name: "name3", items: [{ id: 3, item: "3" }] }
+    ]);
+})
+QUnit.test("groupJoin 使用comparer", assert => {
+    let outer = [
+        { idObj: { id: 1 }, name: "name1" },
+        { idObj: { id: 2 }, name: "name2" },
+        { idObj: { id: 3 }, name: "name3" },
+    ];
+    let inner = [
+        { idObj: { id: 1 }, item: "1" },
+        { idObj: { id: 2 }, item: "2" },
+        { idObj: { id: 3 }, item: "3" },
+        { idObj: { id: 1 }, item: "4" }
+    ];
+
+    let newArr = from(outer).groupJoin(
+        inner,
+        outerIt => outerIt.idObj,
+        innerIt => innerIt.idObj,
+        (outerIt, innerItGroup) => {
+            return {
+                id: outerIt.idObj.id,
+                name: outerIt.name,
+                items: innerItGroup
+            }
+        },
+        (outerKey, innerKey) => {
+            return outerKey.id === innerKey.id;
+        }
+    ).toArray();
+    assert.deepEqual(newArr, [
+        {
+            id: 1, name: "name1", items: [
+                { idObj: { id: 1 }, item: "1" },
+                { idObj: { id: 1 }, item: "4" }
+            ]
+        },
+        { id: 2, name: "name2", items: [{ idObj: { id: 2 }, item: "2" }] },
+        { id: 3, name: "name3", items: [{ idObj: { id: 3 }, item: "3" }] }
+    ]);
+})
 
 
 

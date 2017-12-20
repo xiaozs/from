@@ -846,8 +846,30 @@ export class From<T> implements Iterable<T>{
             }
         })
     }
-    groupJoin() {
-
+    groupJoin<TInner, TKey, TResult>(
+        inner: Iterable<TInner>,
+        outerKeySelector: Selector<T, TKey>,
+        innerKeySelector: Selector<TInner, TKey>,
+        resultSelector: MergeSelector<T, Iterable<TInner>, TResult>,
+        comparer: EqualityComparer<TKey> = defaultEqualityComparer
+    ) {
+        let that = this;
+        return new From({
+            *[Symbol.iterator]() {
+                for (let outerIt of that) {
+                    let resultArray: TInner[] = [];
+                    for (let innerIt of inner) {
+                        let outerKey = outerKeySelector(outerIt);
+                        let innerKey = innerKeySelector(innerIt);
+                        let flag = comparer(outerKey, innerKey);
+                        if (flag) {
+                            resultArray.push(innerIt);
+                        }
+                    }
+                    yield resultSelector(outerIt, resultArray);
+                }
+            }
+        })
     }
     group() {
 
