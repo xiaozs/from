@@ -697,6 +697,13 @@ QUnit.test("thenByDescending 对特定对象进行排序时", assert => {
         { value1: 3, value2: 1 }
     ]);
 })
+QUnit.test("reverse", assert => {
+    let arr = [1, 2, 3, 4];
+    let newArr = from(arr).reverse().toArray();
+    assert.deepEqual(newArr, [4, 3, 2, 1]);
+})
+
+
 
 
 

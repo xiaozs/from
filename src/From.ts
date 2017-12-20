@@ -810,7 +810,18 @@ export class From<T> implements Iterable<T>{
         return new OrderedFrom(this, keySelector, SortOrder.descending, valueComparer);
     }
     reverse() {
-
+        let that = this;
+        return new From({
+            *[Symbol.iterator]() {
+                let itemArray: T[] = [];
+                for (let item of that) {
+                    itemArray.push(item);
+                }
+                for (let item of itemArray.reverse()) {
+                    yield item;
+                }
+            }
+        });
     }
     join() {
 
