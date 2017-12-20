@@ -3,7 +3,7 @@ import List from "DataStruct/List";
 import Map from "DataStruct/Map";
 import { IConstructor } from "Interface";
 import { MapObject, KeyValuePair } from "Interface";
-import { AggregateFunc, Predicate, Comparer, Selector } from "Interface";
+import { AggregateFunc, Predicate, EqualityComparer, Selector, ValueComparer } from "Interface";
 /**
  * 用作部分Predicate参数的默认值
  */
@@ -13,16 +13,23 @@ function defaultPredicate<T>(item: T) {
 /**
  * 用作部分Comparer参数的默认值
  */
-function defaultComparer<T>(a: T, b: T) {
+function defaultEqualityComparer<T>(a: T, b: T) {
     return a === b;
 }
+function defaultValueComparerForString(a: string, b: string) {
+    return a.localeCompare(b);
+}
+function defaultValueComparerForNumber(a: number, b: number) {
+    return a - b;
+}
+
 
 export class From<T> implements Iterable<T>{
     /**
      * 构造函数
      * @param iterable 可迭代对象
      */
-    constructor(private iterable: Iterable<T>) { }
+    constructor(protected iterable: Iterable<T>) { }
 
     /**
      * From的迭代器
@@ -167,7 +174,7 @@ export class From<T> implements Iterable<T>{
     concat(second: Iterable<T>): From<T> {
         let that = this;
         return new From({
-            [Symbol.iterator]: function* () {
+            *[Symbol.iterator]() {
                 for (let item of that) {
                     yield item;
                 }
@@ -183,7 +190,7 @@ export class From<T> implements Iterable<T>{
      * @param value 要在序列中定位的值
      * @param comparer 一个对值进行比较的相等比较器
      */
-    contains(value: T, comparer: Comparer<T> = defaultComparer): boolean {
+    contains(value: T, comparer: EqualityComparer<T> = defaultEqualityComparer): boolean {
         return this.any(item => {
             let flag = comparer(value, item);
             return flag;
@@ -222,10 +229,10 @@ export class From<T> implements Iterable<T>{
      * 对值进行比较返回序列中的非重复元素
      * @param comparer 用于比较值的函数
      */
-    distinct(comparer: Comparer<T> = defaultComparer): From<T> {
+    distinct(comparer: EqualityComparer<T> = defaultEqualityComparer): From<T> {
         let that = this;
         return new From({
-            [Symbol.iterator]: function* () {
+            *[Symbol.iterator]() {
                 let resultArr: T[] = [];
                 let resultExt = new From(resultArr);
                 for (let item of that) {
@@ -266,10 +273,10 @@ export class From<T> implements Iterable<T>{
      * @param second 需要去除的元素的集合
      * @param comparer 用于比较值的函数
      */
-    except(second: Iterable<T>, comparer: Comparer<T> = defaultComparer): From<T> {
+    except(second: Iterable<T>, comparer: EqualityComparer<T> = defaultEqualityComparer): From<T> {
         let that = this;
         return new From({
-            [Symbol.iterator]: function* () {
+            *[Symbol.iterator]() {
                 let secExt = new From(second);
                 for (let item of that) {
                     let flag = secExt.contains(item, comparer);
@@ -313,10 +320,10 @@ export class From<T> implements Iterable<T>{
      * @param second 将返回其也出现在第一个序列中的非重复元素
      * @param comparer 用于比较值的函数
      */
-    intersect(second: Iterable<T>, comparer: Comparer<T> = defaultComparer): From<T> {
+    intersect(second: Iterable<T>, comparer: EqualityComparer<T> = defaultEqualityComparer): From<T> {
         let that = this;
         return new From({
-            [Symbol.iterator]: function* () {
+            *[Symbol.iterator]() {
                 for (let item of second) {
                     let flag = that.contains(item, comparer);
                     if (flag) yield item;
@@ -462,7 +469,7 @@ export class From<T> implements Iterable<T>{
     select<S>(selector: (item: T, index: number) => S): From<S> {
         let that = this;
         return new From({
-            [Symbol.iterator]: function* () {
+            *[Symbol.iterator]() {
                 let index = 0;
                 for (let item of that) {
                     yield selector(item, index++);
@@ -494,7 +501,7 @@ export class From<T> implements Iterable<T>{
         let that = this;
         let argsLength = arguments.length;
         return new From({
-            [Symbol.iterator]: function* () {
+            *[Symbol.iterator]() {
                 let index = 0;
                 if (argsLength === 1) {
                     for (let item of that) {
@@ -520,7 +527,7 @@ export class From<T> implements Iterable<T>{
      * @param second 用于与当前序列进行比较
      * @param comparer 一个用于比较元素的函数
      */
-    sequenceEqual(second: Iterable<T>, comparer: Comparer<T> = defaultComparer): boolean {
+    sequenceEqual(second: Iterable<T>, comparer: EqualityComparer<T> = defaultEqualityComparer): boolean {
         let it1 = this[Symbol.iterator]();
         let it2 = second[Symbol.iterator]();
         let itResult1: IteratorResult<T>;
@@ -597,11 +604,11 @@ export class From<T> implements Iterable<T>{
     skipWhile(predicate: Predicate<T>): From<T> {
         let that = this;
         return new From({
-            [Symbol.iterator]: function* () {
+            *[Symbol.iterator]() {
                 let index = 0;
                 let it = that[Symbol.iterator]();
                 let iterable: Iterable<T> = {
-                    [Symbol.iterator]: function () {
+                    [Symbol.iterator]() {
                         return it;
                     }
                 }
@@ -661,7 +668,7 @@ export class From<T> implements Iterable<T>{
     takeWhile(predicate: Predicate<T>): From<T> {
         let that = this;
         return new From({
-            [Symbol.iterator]: function* () {
+            *[Symbol.iterator]() {
                 let index = 0;
                 for (let item of that) {
                     let flag = predicate(item, index++);
@@ -699,10 +706,10 @@ export class From<T> implements Iterable<T>{
      * @param second 它的非重复元素构成联合的第二个集
      * @param comparer 用于对值进行比较的函数
      */
-    union(second: Iterable<T>, comparer: Comparer<T> = defaultComparer): From<T> {
+    union(second: Iterable<T>, comparer: EqualityComparer<T> = defaultEqualityComparer): From<T> {
         let that = this;
         return new From({
-            [Symbol.iterator]: function* () {
+            *[Symbol.iterator]() {
                 for (let item of that) {
                     yield item;
                 }
@@ -721,7 +728,7 @@ export class From<T> implements Iterable<T>{
     where(predicate: Predicate<T>): From<T> {
         let that = this;
         return new From({
-            [Symbol.iterator]: function* () {
+            *[Symbol.iterator]() {
                 let index = 0;
                 for (let item of that) {
                     let flag = predicate(item, index++);
@@ -741,7 +748,7 @@ export class From<T> implements Iterable<T>{
     zip<S, R>(second: Iterable<S>, resultSelector: (a: T, b: S) => R): From<R> {
         let that = this;
         return new From({
-            [Symbol.iterator]: function* () {
+            *[Symbol.iterator]() {
                 let it1 = that[Symbol.iterator]();
                 let it2 = second[Symbol.iterator]();
 
@@ -765,7 +772,7 @@ export class From<T> implements Iterable<T>{
     append(item: T): From<T> {
         let that = this;
         return new From({
-            [Symbol.iterator]: function* () {
+            *[Symbol.iterator]() {
                 for (let thatItem of that) {
                     yield thatItem;
                 }
@@ -781,7 +788,7 @@ export class From<T> implements Iterable<T>{
     prepend(item: T): From<T> {
         let that = this;
         return new From({
-            [Symbol.iterator]: function* () {
+            *[Symbol.iterator]() {
                 yield item;
                 for (let thatItem of that) {
                     yield thatItem;
@@ -790,10 +797,13 @@ export class From<T> implements Iterable<T>{
         });
     }
 
-    orderBy() { }
+    orderBy(keySelector: Selector<T, number>): OrderedFrom<T>;
+    orderBy(keySelector: Selector<T, String>): OrderedFrom<T>;
+    orderBy(keySelector: Selector<T, any>, valueComparer: ValueComparer<T>): OrderedFrom<T>;
+    orderBy(keySelector: Selector<T, any>, valueComparer?: ValueComparer<T>): OrderedFrom<T> {
+        return new OrderedFrom(this, keySelector, valueComparer);
+    }
     orderByDescending() { }
-    thenBy() { }
-    thenByDescending() { }
     reverse() {
 
     }
@@ -817,7 +827,7 @@ export class From<T> implements Iterable<T>{
      */
     static range(start: number, count: number): From<number> {
         return new From({
-            [Symbol.iterator]: function* () {
+            *[Symbol.iterator]() {
                 while (count--) {
                     yield start++;
                 }
@@ -832,7 +842,7 @@ export class From<T> implements Iterable<T>{
      */
     static repeat<T>(item: T, count: number): From<T> {
         return new From({
-            [Symbol.iterator]: function* () {
+            *[Symbol.iterator]() {
                 while (count--) {
                     yield item;
                 }
@@ -846,6 +856,46 @@ export class From<T> implements Iterable<T>{
     static empty<T>(): From<T> {
         return new From([]);
     }
+}
+
+class OrderedFrom<T> extends From<T> {
+    constructor(
+        iterable: Iterable<T>,
+        private keySelector: Selector<T, any>,
+        private valueComparer?: ValueComparer<T>
+    ) {
+        super(iterable);
+    }
+    *[Symbol.iterator]() {
+        let itemArray = this.getInnerArray();
+        for (let item of itemArray) {
+            yield item;
+        }
+    }
+    private getInnerArray() {
+        let itemArray: T[] = [];
+        for (let it of this.iterable) {
+            itemArray.push(it);
+        }
+        if (itemArray.length > 0) {
+            let comparer = this.valueComparer as ValueComparer<any>;
+            let first = itemArray[0];
+            let key = this.keySelector(first);
+            if (Type.isString(key)) {
+                comparer = defaultValueComparerForString;
+            } else if (Type.isNumber(key)) {
+                comparer = defaultValueComparerForNumber;
+            }
+            itemArray.sort((a, b) => {
+                let keyA = this.keySelector(a);
+                let keyB = this.keySelector(b);
+                return comparer(keyA, keyB);
+            });
+        }
+        return itemArray;
+    }
+    thenBy() { }
+    thenByDescending() { }
 }
 
 /**

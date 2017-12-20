@@ -24,9 +24,14 @@ export interface AggregateFunc<S, T> {
 export interface Predicate<T> {
     (item: T, index: number): boolean;
 }
-export interface Comparer<T> {
+export interface EqualityComparer<T> {
     (a: T, b: T): boolean;
 }
+
+export interface ValueComparer<T> {
+    (a: T, b: T): number;
+}
+
 export interface Selector<I, O> {
     (item: I): O;
 }
