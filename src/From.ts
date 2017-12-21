@@ -3,7 +3,11 @@ import List from "DataStruct/List";
 import Map from "DataStruct/Map";
 import { IConstructor } from "Interface";
 import { MapObject, KeyValuePair } from "Interface";
-import { AggregateFunc, Predicate, EqualityComparer, Selector, MergeSelector, ValueComparer } from "Interface";
+import {
+    AggregateFunc, Predicate, EqualityComparer, Selector, MergeSelector,
+    ValueComparer, SortMessageCache, GroupParam, GroupParamWithComparer, GroupParamWithElementSelector,
+    GroupParamWithResultSelector, SortOrder
+} from "Interface";
 /**
  * 用作部分Predicate参数的默认值
  */
@@ -850,7 +854,7 @@ export class From<T> implements Iterable<T>{
         inner: Iterable<TInner>,
         outerKeySelector: Selector<T, TKey>,
         innerKeySelector: Selector<TInner, TKey>,
-        resultSelector: MergeSelector<T, Iterable<TInner>, TResult>,
+        resultSelector: MergeSelector<T, From<TInner>, TResult>,
         comparer: EqualityComparer<TKey> = defaultEqualityComparer
     ) {
         let that = this;
@@ -866,17 +870,47 @@ export class From<T> implements Iterable<T>{
                             resultArray.push(innerIt);
                         }
                     }
-                    yield resultSelector(outerIt, resultArray);
+                    yield resultSelector(outerIt, new From(resultArray));
                 }
             }
         })
     }
-    group() {
+    /* groupBy<TKey, TElement, TResult>(
+        keySelector: Selector<T, TKey>,
+        groupParam?: GroupParamWithComparer<TKey>
+    ): From<Grouping<TKey, T>>;
+    groupBy<TKey, TElement, TResult>(
+        keySelector: Selector<T, TKey>,
+        groupParam: GroupParamWithElementSelector<T, TKey, TElement>
+    ): From<Grouping<TKey, TElement>>;
+    groupBy<TKey, TElement, TResult>(
+        keySelector: Selector<T, TKey>,
+        groupParam: GroupParamWithResultSelector<T, TKey, TElement, TResult>
+    ): From<TResult>;
+    groupBy<TKey, TElement, TResult>(
+        keySelector: Selector<T, TKey>,
+        groupParam: GroupParam<T, TKey, TElement, TResult> = {
+            comparer: defaultEqualityComparer
+        }
+    ): From<any> {
+        let that = this;
+        return new From({
 
-    }
-    groupBy() {
+            *[Symbol.iterator]() {
+                let cache = {};
+                for (let item of that) {
+                    let key = keySelector(item);
+                    if (!cache[key]) {
+                        cache[key] = [];
+                    }
+                    cache[key].push(item);
+                }
+                if ("elementSelector" in groupParam) {
 
-    }
+                }
+            }
+        });
+    } */
 
     /**
      * 生成指定范围内的整数序列
@@ -914,18 +948,6 @@ export class From<T> implements Iterable<T>{
     static empty<T>(): From<T> {
         return new From([]);
     }
-}
-
-interface SortMessageCache<T> {
-    keySelector: Selector<T, any>;
-    valueComparer?: ValueComparer<T>;
-    sortOrder: SortOrder;
-
-}
-
-enum SortOrder {
-    ascending,
-    descending
 }
 
 class OrderedFrom<T> extends From<T> {
@@ -1018,4 +1040,13 @@ class OrderedFrom<T> extends From<T> {
  */
 export default function from<T>(it: Iterable<T>) {
     return new From(it);
+}
+
+class Grouping<TKey, T> extends From<T> {
+    constructor(
+        readonly key: TKey,
+        elements: Iterable<T>
+    ) {
+        super(elements);
+    }
 }

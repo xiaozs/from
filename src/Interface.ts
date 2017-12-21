@@ -46,3 +46,32 @@ export interface MergeSelector<I1, I2, O> {
 export interface IConstructor<T> {
     new (...args: any[]): T;
 }
+
+
+
+export interface SortMessageCache<T> {
+    keySelector: Selector<T, any>;
+    valueComparer?: ValueComparer<T>;
+    sortOrder: SortOrder;
+}
+export interface GroupParamWithComparer<TKey> {
+    comparer: EqualityComparer<TKey>
+}
+export interface GroupParamWithElementSelector<T, TKey, TElement> {
+    elementSelector: Selector<T, TElement>;
+    comparer?: EqualityComparer<TKey>
+}
+export interface GroupParamWithResultSelector<T, TKey, TElement, TResult> {
+    elementSelector?: Selector<T, TElement>;
+    resultSelector: MergeSelector<T, Iterable<TElement>, TResult>,
+    comparer?: EqualityComparer<TKey>
+}
+export type GroupParam<T, TKey, TElement, TResult> =
+    GroupParamWithComparer<TKey> |
+    GroupParamWithElementSelector<T, TKey, TElement> |
+    GroupParamWithResultSelector<T, TKey, TElement, TResult>;
+
+export enum SortOrder {
+    ascending,
+    descending
+}
