@@ -875,7 +875,7 @@ QUnit.test("groupJoin 不使用comparer", assert => {
             return {
                 id: outerIt.id,
                 name: outerIt.name,
-                items: innerItGroup
+                items: innerItGroup.toArray()
             }
         }
     ).toArray();
@@ -911,7 +911,7 @@ QUnit.test("groupJoin 使用comparer", assert => {
             return {
                 id: outerIt.idObj.id,
                 name: outerIt.name,
-                items: innerItGroup
+                items: innerItGroup.toArray()
             }
         },
         (outerKey, innerKey) => {
