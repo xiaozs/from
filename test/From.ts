@@ -308,12 +308,18 @@ QUnit.test("last 有2个参数 且 存在元素 且 不存在合乎条件元素 
     }, 100);
     assert.ok(res === 100);
 })
+QUnit.test("max 作用于空集 时", assert => {
+    let arr: any[] = [];
+    assert.throws(() => {
+        let max = from(arr).max();
+    });
+})
 QUnit.test("max 有0个参数 时", assert => {
     let arr: any[] = [1, 2, 3];
     let max = from(arr).max();
     assert.ok(max === 3);
 })
-QUnit.test("min 有0个参数 且 数组元素不为number 时", assert => {
+QUnit.test("max 有0个参数 且 数组元素不为number 时", assert => {
     let arr = [{ value: 1 }, { value: 2 }, { value: 3 }];
     assert.throws(() => {
         let max = from(arr).max();
@@ -325,6 +331,12 @@ QUnit.test("max 有1个参数 时", assert => {
         return item.value;
     });
     assert.deepEqual(max, { value: 3 });
+})
+QUnit.test("min 作用于空集 时", assert => {
+    let arr: any[] = [];
+    assert.throws(() => {
+        let min = from(arr).min();
+    });
 })
 QUnit.test("min 有0个参数 且 数组元素为number 时", assert => {
     let arr: any[] = [1, 2, 3];
